@@ -148,8 +148,6 @@ div.paging a.active
     border: 1px solid #c2c2c2;
     border-radius: 5px;
     padding: 12px;
-    margin-left: -15px;
-    margin-bottom: 20px;
 }
 
 .nav, .pagination, .carousel, .panel-title a, .mouse-pointer{ 
@@ -738,7 +736,7 @@ div#selectionTree {
 }
 
 .ui-select-dropdown, .select2-drop {
-    z-index: 100;
+    z-index: 10000 !important;
 }
 
 .superscript {
@@ -837,6 +835,9 @@ div#selectionTree {
     color: #fff;
 }
 
+.report-filters {    
+    margin: -15px;
+}
 .report-role-info {
     padding: 15px;
 }
@@ -932,6 +933,11 @@ div#selectionTree {
     color: #fff;
     background-color: #467e4a;
     border-color: #335235;
+}
+
+.report-panel-header {
+    color: #fff;
+    font-size: 14px;
 }
 
 .nav, .pagination, .carousel, .panel-title a, .mouse-pointer{ 

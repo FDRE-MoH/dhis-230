@@ -20,6 +20,8 @@ customReport.controller('reportController',
                     reportColumn: 'PERIOD',
                     categoryCombos: [],
                     dataElementGroups: [],
+                    orgUnitGroupSets: [],
+                    categoryOptionGroupSets: [],
                     groupIdsByDataElement: [],
                     groupsByDataElement: [],
                     showDiseaseGroup: false,
@@ -30,10 +32,12 @@ customReport.controller('reportController',
                     columns: [],
                     reportReady: false,
                     reportStarted: false,
+                    showDimensionFilters: false,
                     showReportFilters: true,
                     showDiseaseFilters: true,
                     selectedPeriodType: null,
                     reportName: '',
+                    metaDataLoaded: false,
                     valueExists: false};
                 
     downloadMetaData().then(function(){
@@ -41,27 +45,42 @@ customReport.controller('reportController',
         MetaDataFactory.getAll('dataSets').then(function(ds){
             $scope.model.dataSets = ds;
 
-            MetaDataFactory.getAll('periodTypes').then(function(pts){
-                pts = orderByFilter(pts, '-frequencyOrder').reverse();
-                $scope.model.periodTypes = pts;
-                MetaDataFactory.getAll('categoryCombos').then(function(ccs){
-                    angular.forEach(ccs, function(cc){
-                        $scope.model.categoryCombos[cc.id] = cc;
-                    });
-                    
-                    MetaDataFactory.getAll('dataElementGroups').then(function(degs){
-                        angular.forEach(degs, function(deg){
-                            $scope.model.dataElementGroups[deg.id] = deg;
-                            angular.forEach(deg.dataElements, function(de){
-                                $scope.model.groupsByDataElement[de.id] = {id: deg.id, name: deg.displayName};
-                            });
-                        });
-                        
-                        DataElementGroupFactory.getNonControllingDataElementGroups().then(function (degs) {
-                            $scope.dataElementGroups = degs;
+            MetaDataFactory.getAll('categoryOptionGroupSets').then(function( cogs ){
 
-                            selectionTreeSelection.setMultipleSelectionAllowed( true );
-                            selectionTree.clearSelectedOrganisationUnitsAndBuildTree();
+                $scope.model.categoryOptionGroupSets = cogs;
+
+                MetaDataFactory.getAll('organisationUnitGroupSets').then(function( ougs ){
+
+                    $scope.model.orgUnitGroupSets = ougs;
+
+                    MetaDataFactory.getAll('periodTypes').then(function(pts){
+
+                        pts = orderByFilter(pts, '-frequencyOrder').reverse();
+                        $scope.model.periodTypes = pts;
+                        
+                        MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+                            angular.forEach(ccs, function(cc){
+                                $scope.model.categoryCombos[cc.id] = cc;
+                            });
+
+                            MetaDataFactory.getAll('dataElementGroups').then(function(degs){
+
+                                angular.forEach(degs, function(deg){
+                                    $scope.model.dataElementGroups[deg.id] = deg;
+                                    angular.forEach(deg.dataElements, function(de){
+                                        $scope.model.groupsByDataElement[de.id] = {id: deg.id, name: deg.displayName};
+                                    });
+                                });
+
+                                DataElementGroupFactory.getNonControllingDataElementGroups().then(function (degs) {
+                                    $scope.dataElementGroups = degs;
+
+                                    selectionTreeSelection.setMultipleSelectionAllowed( true );
+                                    selectionTree.clearSelectedOrganisationUnitsAndBuildTree();
+
+                                    $scope.model.metaDataLoaded = true;
+                                });
+                            });
                         });
                     });
                 });
@@ -99,7 +118,6 @@ customReport.controller('reportController',
         $scope.model.columns = [];
         $scope.dataValues = {};
         if( angular.isObject( $scope.model.selectedDataSet ) ) {
-            
             
             $scope.model.selectedAttributeCategoryCombo = null;     
             if( $scope.model.selectedDataSet && 
@@ -144,15 +162,6 @@ customReport.controller('reportController',
                         });
 
                         angular.forEach(section.indicators,function(indicator){
-                           angular.forEach(indicator.attributeValues,function(attribute){
-                               var val=attribute.value;
-                               if(val==="true"){
-                                   val=true;
-                               }else if(val==="false"){
-                                   val=false;
-                               }
-                               indicator[attribute.attribute.code]= val;
-                           });
                            indicators.push( indicator );
                         });
                     });
@@ -340,6 +349,11 @@ customReport.controller('reportController',
             return;
         }
         
+        if( !$scope.model.selectedDataSet ){
+            DataEntryUtils.notify('error', 'please_select_dataset');
+            return;
+        }
+
         if( !$scope.model.selectedPeriods || $scope.model.selectedPeriods.length < 1 ){
             DataEntryUtils.notify('error', 'please_select_period');
             return;
@@ -348,8 +362,23 @@ customReport.controller('reportController',
         $scope.model.reportStarted = true;
         $scope.model.reportReady = false;
         $scope.model.showReportFilters = false;
+        $scope.model.showDimensionFilters = false;
         $scope.model.columns = [];
         
+        var additionalDimensions = [];
+
+        angular.forEach( $scope.model.categoryOptionGroupSets, function(cogs){
+            if( cogs.selectedOptions && cogs.selectedOptions.length ){
+                additionalDimensions.push("dimension=" + cogs.id + ":" + $.map(cogs.selectedOptions, function(co){return co.id;}).join(';') );
+            }
+        });
+
+        angular.forEach( $scope.model.orgUnitGroupSets, function(ougs){
+            if( ougs.selectedOptions && ougs.selectedOptions.length ){
+                additionalDimensions.push("dimension=" + ougs.id + ":" + $.map(ougs.selectedOptions, function(co){return co.id;}).join(';') );
+            }
+        });
+
         if( $scope.model.selectedDataSet.DataSetCategory === 'Disease' ){
             var dimension = [];
             var analyticsUrl = "ds=" + $scope.model.selectedDataSet.id;
@@ -361,8 +390,8 @@ customReport.controller('reportController',
                 !$scope.model.selectedAttributeCategoryCombo.isDefault ){
 
                 angular.forEach( $scope.model.selectedAttributeCategoryCombo.categories, function(ca){
-                    if( ca.selectedOption && ca.selectedOption.id ){
-                        dimension.push("dimension=" + ca.id + ":" + ca.selectedOption.id );
+                    if( ca.selectedOptions && ca.selectedOptions.length ){
+                        dimension.push("dimension=" + ca.id + ":" + $.map(ca.selectedOptions, function(co){return co.id;}).join(';') );
                     }
                 });
             }
@@ -382,11 +411,15 @@ customReport.controller('reportController',
                 analyticsUrl += '&' + dimension.join('&');
                 var dimensionNames = [];
                 angular.forEach( $scope.model.selectedAttributeCategoryCombo.categories, function(ca){
-                    if( ca.selectedOption && ca.selectedOption.id ){
-                        dimensionNames.push(ca.displayName + "=" + ca.selectedOption.displayName );
+                    if( ca.selectedOptions && ca.selectedOptions.length ){
+                        dimensionNames.push( ca.displayName + "=" + $.map(ca.selectedOptions, function(co){return co.displayName;}).join(',') );
                     }
                 });
                 $scope.model.reportName += ' - ' + dimensionNames.join(';');
+            }
+
+            if ( additionalDimensions.length > 0 ){
+                analyticsUrl += '&' + additionalDimensions.join('&');
             }
         
             Analytics.getDiseaseReport( analyticsUrl ).then(function(data){
@@ -423,6 +456,10 @@ customReport.controller('reportController',
                 $scope.model.columns = orderByFilter( $scope.model.selectedPeriods, '-id').reverse();
 
                 $scope.model.reportName = $scope.model.selectedDataSet.displayName + ' (' + $.map($scope.selectedOrgUnits, function(ou){return ou.name;}).join('; ') + ')'; 
+            }
+
+            if ( additionalDimensions.length > 0 ){
+                dimension += '&' + additionalDimensions.join('&');
             }
             
             Analytics.getReport($scope.model.selectedDataSet.id, dimension, filter, $scope.model.selectedDataSet.DataSetCategory).then(function(data){
