@@ -38,7 +38,6 @@ diseaseRegistration.controller('dataEntryController',
                     selectedAttributeOptionCombo: null,
                     categoryCombos: null,
                     optionCombos: {},
-                    attributeCategoryUrl: null,
                     greyedFields: [],
                     valueExists: false};
     
@@ -100,7 +99,7 @@ diseaseRegistration.controller('dataEntryController',
     }; 
     
     //watch for selection of data set
-    $scope.$watch('model.selectedDataSet', function() {        
+    $scope.$watch('model.selectedDataSet', function() {
         $scope.model.periods = [];
         $scope.model.dataElements = [];
         $scope.model.dataElementsWithValue = [];
@@ -116,6 +115,7 @@ diseaseRegistration.controller('dataEntryController',
     });
     
     $scope.$watch('model.selectedPeriod', function(){
+        resetCategoryOptions();
         $scope.dataValues = {};
         $scope.dataValuesCopy = {};
         $scope.model.valueExists = false;        
@@ -192,6 +192,16 @@ diseaseRegistration.controller('dataEntryController',
         $scope.saveStatus = {};
     };
     
+    var resetCategoryOptions = function(){
+        if ( $scope.model.selectedAttributeCategoryCombo && $scope.model.selectedAttributeCategoryCombo.id )
+        {
+            angular.forEach($scope.model.selectedAttributeCategoryCombo.categories, function(ca){
+                delete ca.selectedOption;
+            });
+        }
+        $scope.model.categoryOptionsReady = false;
+    };
+    
     var copyDataValues = function(){
         $scope.dataValuesCopy = angular.copy( $scope.dataValues );
     };
@@ -199,23 +209,24 @@ diseaseRegistration.controller('dataEntryController',
     $scope.loadDataEntryForm = function(){
         
         resetParams();
+        $scope.model.selectedAttributeOptionCombo = DataEntryUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
+        
         if( angular.isObject( $scope.selectedOrgUnit ) && $scope.selectedOrgUnit.id &&
                 angular.isObject( $scope.model.selectedDataSet ) && $scope.model.selectedDataSet.id &&
                 angular.isObject( $scope.model.selectedPeriod) && $scope.model.selectedPeriod.id &&
-                $scope.model.categoryOptionsReady ){
+                $scope.model.categoryOptionsReady &&
+                $scope.model.selectedAttributeOptionCombo ){
             
             var dataValueSetUrl = 'dataSet=' + $scope.model.selectedDataSet.id + '&period=' + $scope.model.selectedPeriod.id;
 
             dataValueSetUrl += '&orgUnit=' + $scope.selectedOrgUnit.id;
             
-            $scope.model.selectedAttributeOptionCombo = DataEntryUtils.getOptionComboIdFromOptionNames($scope.model.selectedAttributeOptionCombos, $scope.model.selectedOptions);
-            
-            $scope.model.attributeCategoryUrl = {cc: $scope.model.selectedAttributeCategoryCombo.id, default: $scope.model.selectedAttributeCategoryCombo.isDefault, cp: DataEntryUtils.getOptionIds($scope.model.selectedOptions)};
+            dataValueSetUrl += '&attributeOptionCombo=' + $scope.model.selectedAttributeOptionCombo;
                         
             //fetch data values...
             DataValueService.getDataValueSet( dataValueSetUrl ).then(function(response){                
                 if( response && response.dataValues && response.dataValues.length > 0 ){
-                    response.dataValues = $filter('filter')(response.dataValues, {attributeOptionCombo: $scope.model.selectedAttributeOptionCombo});
+                    //response.dataValues = $filter('filter')(response.dataValues, {attributeOptionCombo: $scope.model.selectedAttributeOptionCombo});
                     if( response.dataValues.length > 0 ){
                         $scope.model.valueExists = true;
                         response.dataValues = orderByFilter(response.dataValues, '-lastUpdated');
