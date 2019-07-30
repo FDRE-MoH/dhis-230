@@ -37,8 +37,11 @@ var d2Directives = angular.module('d2Directives', [])
                 
                 if( ids[0] && names[0] ){
                     var ou = {id: ids[0], displayName: names[0]};
-                    
-                    IndexDBService.open('dhis2ou').then(function(){
+                    $timeout(function () {
+                        scope.selectedOrgUnit = ou;
+                        scope.$apply();
+                    });
+                    /*IndexDBService.open('dhis2ou').then(function(){
                         IndexDBService.get('ou', ou.id).then(function(ou){
                             if( ou ){
                                 ou.id = ids[0];
@@ -49,7 +52,7 @@ var d2Directives = angular.module('d2Directives', [])
                                 });
                             }                            
                         });
-                    });
+                    });*/
                 }
             }
         }
