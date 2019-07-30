@@ -98,7 +98,10 @@ dhis2.metadata.processMetaDataAttribute = function( obj )
             	if( obj.attributeValues[i].attribute.valueType === 'BOOLEAN' || obj.attributeValues[i].attribute.valueType === 'TRUE_ONLY' ){
                     if( obj.attributeValues[i].value === 'true' ){
                         obj[obj.attributeValues[i].attribute.code] = true;
-                    }                    
+                    }
+                    else if( obj.attributeValues[i].value === 'false' ){
+                        obj[obj.attributeValues[i].attribute.code] = false;
+                    }
             	}
             	else if( obj.attributeValues[i].attribute.valueType === 'NUMBER' && obj.attributeValues[i].value ){
                     obj[obj.attributeValues[i].attribute.code] = parseInt( obj.attributeValues[i].value );
