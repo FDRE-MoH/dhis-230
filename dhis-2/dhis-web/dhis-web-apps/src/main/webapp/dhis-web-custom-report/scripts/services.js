@@ -10,7 +10,7 @@ var customReportServices = angular.module('customReportServices', ['ngResource']
     var store = new dhis2.storage.Store({
         name: "dhis2cr",
         adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-        objectStores: ['dataSets', 'periodTypes', 'categoryCombos', 'dataElementGroups', 'categoryOptionGroupSets']
+        objectStores: ['dataSets', 'periodTypes', 'categoryCombos', 'dataElementGroups', 'categoryOptionGroupSets', 'organisationUnitGroupSets']
     });
     return{
         currentStore: store

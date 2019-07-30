@@ -31,7 +31,7 @@ if( dhis2.customReport.memoryOnly ) {
 dhis2.customReport.store = new dhis2.storage.Store({
     name: 'dhis2cr',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'periodTypes', 'categoryCombos', 'dataElementGroups', 'categoryOptionGroupSets']
+    objectStores: ['dataSets', 'periodTypes', 'categoryCombos', 'dataElementGroups', 'categoryOptionGroupSets', 'organisationUnitGroupSets']
 });
 
 (function($) {
@@ -168,7 +168,12 @@ function downloadMetaData()
 
         .then( getMetaCategoryOptionGroupSets )
         .then( filterMissingCategoryOptionGroupSets )
-        .then( getCategoryOptionGroupSets );
+        .then( getCategoryOptionGroupSets )
+        
+        .then( getMetaOrganisationUnitGroupSets )
+        .then( filterMissingOrganisationUnitGroupSets )
+        .then( getOrganisationUnitGroupSets );
+
 }
 
 function getSystemSetting(){   
@@ -228,4 +233,16 @@ function filterMissingCategoryOptionGroupSets( objs ){
 
 function getCategoryOptionGroupSets( ids ){
     return dhis2.metadata.getBatches( ids, batchSize, 'categoryOptionGroupSets', 'categoryOptionGroupSets', '../api/categoryOptionGroupSets.json', 'paging=false&fields=id,displayName,version,attributeValues[value,attribute[id,name,valueType,code]],categoryOptionGroups[id,displayName,categoryOptions[id,displayName]]', 'idb', dhis2.customReport.store, dhis2.metadata.processObject);
+}
+
+function getMetaOrganisationUnitGroupSets(){
+    return dhis2.metadata.getMetaObjectIds('organisationUnitGroupSets', '../api/organisationUnitGroupSets.json', 'paging=false&fields=id,version');
+}
+
+function filterMissingOrganisationUnitGroupSets( objs ){
+    return dhis2.metadata.filterMissingObjIds('organisationUnitGroupSets', dhis2.customReport.store, objs);
+}
+
+function getOrganisationUnitGroupSets( ids ){
+    return dhis2.metadata.getBatches( ids, batchSize, 'organisationUnitGroupSets', 'organisationUnitGroupSets', '../api/organisationUnitGroupSets.json', 'paging=false&fields=id,displayName,version,organisationUnitGroups[id,displayName]', 'idb', dhis2.customReport.store, dhis2.metadata.processObject);
 }
