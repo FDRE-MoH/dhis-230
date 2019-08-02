@@ -17,8 +17,11 @@
             <thead>
                 <tr ng-repeat="category in model.selectedCategoryCombo.categories">
                     <th style="width: 20%;">
-                        <span ng-if="$index === model.selectedCategoryCombo.categories.length - 1">
+                        <span ng-if="$index === 0">
                             {{'disease_list' | translate}}
+                        </span>
+                        <span ng-if="$index === model.selectedCategoryCombo.categories.length - 1">
+                            <input type="text" ng-model="model.selectedDisease" class="form-control" placeholder="{{'search_for_recorded_disease' | translate}}">
                         </span>                        
                     </th>
                     <th class="pull-center" colspan="{{category.colSpan}}" ng-repeat="categoryOption in category.categoryOptions">
@@ -35,9 +38,9 @@
                 </tr>
             </thead>
             <tbody>                
-                <tr ng-repeat="de in model.dataElementsWithValue | orderBy : '-created' ">
+                <tr ng-repeat="de in model.dataElementsWithValue | filter: { displayFormName: model.selectedDisease } | orderBy : ['-total', '-created'] ">
                     <td>
-                        {{model.dataElements[de.id].displayFormName}}
+                        {{de.displayFormName}}
                     </td>
                     <td ng-repeat="oco in model.selectedCategoryCombo.categoryOptionCombos">
                         <ng-form name="innerUpdateForm">
@@ -46,6 +49,7 @@
                                     <span ng-switch-when="NUMBER">
                                         <input type="number"  
                                                name="foo"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.dataElements[de.id].valueType}}
                                                ng-model="dataValues[de.id][oco.id].value"                                               
@@ -60,6 +64,7 @@
                                     <span ng-switch-when="INTEGER">
                                         <input type="number"   
                                                name="foo"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.dataElements[de.id].valueType}}
                                                ng-model="dataValues[de.id][oco.id].value"
@@ -74,6 +79,7 @@
                                     <span ng-switch-when="INTEGER_POSITIVE">
                                         <input type="number" 
                                                name="foo"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.dataElements[de.id].valueType}}
                                                ng-model="dataValues[de.id][oco.id].value"
@@ -88,6 +94,7 @@
                                     <span ng-switch-when="INTEGER_NEGATIVE">
                                         <input type="number"   
                                                name="foo"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.dataElements[de.id].valueType}}
                                                ng-model="dataValues[de.id][oco.id].value"
@@ -102,6 +109,7 @@
                                     <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
                                         <input type="number"   
                                                name="foo"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.dataElements[de.id].valueType}}
                                                ng-model="dataValues[de.id][oco.id].value"
@@ -143,7 +151,7 @@
                                    on-select="toggleDimensionInput()"
                                    style="width:100%;">
                             <ui-select-match allow-clear="true" class="form-control-ui-select" placeholder="{{'select_for_new_disease' | translate}}">{{$select.selected.displayFormName  || $select.selected}}</ui-select-match>
-                            <ui-select-choices  repeat="de in model.selectedDataSet.dataElements | existingDisease : model.dataElementsWithValue | filter: $select.search | limitTo:maxOptionSize | orderBy:'displayFormName' ">
+                            <ui-select-choices  repeat="de in model.selectedDataSet.dataElements | existingDisease : model.dataElementsWithValue | orderBy:'displayFormName' | filter: $select.search | limitTo:maxOptionSize">
                                 <span ng-bind-html="de.displayFormName | highlight: $select.search"></span>
                             </ui-select-choices>
                         </ui-select>
@@ -155,6 +163,7 @@
                                     <span ng-switch-when="NUMBER">
                                         <input type="number"  
                                                name="fooNew"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.sde.valueType}}
                                                ng-model="newDataValue[model.sde.id][oco.id].value" 
@@ -169,6 +178,7 @@
                                     <span ng-switch-when="INTEGER">
                                         <input type="number"   
                                                name="fooNew"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.sde.valueType}}
                                                ng-model="newDataValue[model.sde.id][oco.id].value" 
@@ -183,6 +193,7 @@
                                     <span ng-switch-when="INTEGER_POSITIVE">
                                         <input type="number" 
                                                name="fooNew"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.sde.valueType}}
                                                ng-model="newDataValue[model.sde.id][oco.id].value" 
@@ -197,6 +208,7 @@
                                     <span ng-switch-when="INTEGER_NEGATIVE">
                                         <input type="number"   
                                                name="fooNew"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.sde.valueType}}
                                                ng-model="newDataValue[model.sde.id][oco.id].value" 
@@ -211,6 +223,7 @@
                                     <span ng-switch-when="INTEGER_ZERO_OR_POSITIVE">
                                         <input type="number"   
                                                name="fooNew"
+                                               max="999"
                                                d2-number-validator
                                                number-type={{model.sde.valueType}}
                                                ng-model="newDataValue[model.sde.id][oco.id].value" 

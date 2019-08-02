@@ -7,7 +7,6 @@ var diseaseRegistration = angular.module('diseaseRegistration');
 //Controller for settings page
 diseaseRegistration.controller('dataEntryController',
         function($scope,
-                $filter,                
                 orderByFilter,
                 SessionStorageService,
                 ContextMenuSelectedItem,
@@ -235,7 +234,7 @@ diseaseRegistration.controller('dataEntryController',
                             dv.value = DataEntryUtils.formatDataValue( $scope.model.dataElements[dv.dataElement], dv.value, $scope.model.optionSets, 'USER' );
                             
                             if(!$scope.dataValues[dv.dataElement]){
-                                $scope.model.dataElementsWithValue.push({id: dv.dataElement, created: DateUtils.formatFromApiToUser(dv.lastUpdated)});
+                                $scope.model.dataElementsWithValue.push({id: dv.dataElement, displayFormName: $scope.model.dataElements[dv.dataElement].displayFormName, created: DateUtils.formatFromApiToUser(dv.lastUpdated)});
                                 $scope.dataValues[dv.dataElement] = {};
                                 $scope.dataValues[dv.dataElement][dv.categoryOptionCombo] = dv;
                             }
@@ -247,7 +246,7 @@ diseaseRegistration.controller('dataEntryController',
                 }
                 
                 angular.forEach($scope.dataValues, function(vals, de) {
-                    $scope.dataValues[de] = DataEntryUtils.getDataElementTotal( $scope.dataValues, de);
+                    getTotal( de, $scope.dataValues );
                 });
                 
                 copyDataValues();
@@ -313,16 +312,27 @@ diseaseRegistration.controller('dataEntryController',
         $scope.model.periods = PeriodService.getPeriods( opts );
     };
     
+    function getTotal( deId, values ) {
+        values[deId] = DataEntryUtils.getDataElementTotal(values, deId);
+        for( var i = 0; i < $scope.model.dataElementsWithValue.length; i++ ){
+            if( $scope.model.dataElementsWithValue[i].id === deId ){
+                $scope.model.dataElementsWithValue[i].total = values[deId].total;
+                break;
+            }
+        }
+    }
+
     var processDataValue = function( deId  ){        
         if( deId && $scope.newDataValue[deId] ){
             if( !$scope.dataValues[deId] ){
                 $scope.dataValues[deId] = {};
-                $scope.model.dataElementsWithValue.push({id: deId, created: DateUtils.getServerToday()});
+                $scope.model.dataElementsWithValue.push({id: deId, displayFormName: $scope.model.dataElements[deId].displayFormName, created: DateUtils.getServerToday()});
             }
             else{
                 for( var i=0; i<$scope.model.dataElementsWithValue.length; i++){
                     if( $scope.model.dataElementsWithValue[i].id === deId ){
                         $scope.model.dataElementsWithValue[i].created = DateUtils.getServerToday();
+                        $scope.model.dataElementsWithValue.displayFormName = $scope.model.dataElements[deId].displayFormName;
                         break;
                     }
                 }
@@ -372,11 +382,11 @@ diseaseRegistration.controller('dataEntryController',
         
         if( isUpdate ){
             value = getExistingValue(deId,ocId);
-            $scope.dataValues[deId] = DataEntryUtils.getDataElementTotal($scope.dataValues, deId);
+            getTotal( deId, $scope.dataValues );
         }
         else{
             value = getNewValue(deId,ocId);
-            $scope.newDataValue[deId] = DataEntryUtils.getDataElementTotal($scope.newDataValue, deId);
+            getTotal( deId, $scope.newDataValue );
         }
         
         var dataValue = {
@@ -394,27 +404,6 @@ diseaseRegistration.controller('dataEntryController',
             dataValue.cc = $scope.model.selectedAttributeCategoryCombo.id;
             dataValue.cp = DataEntryUtils.getOptionIds($scope.model.selectedOptions);
         }
-        
-        /*var processDataValue = function(){
-            
-            if(!$scope.dataValues[deId]){                                
-                $scope.dataValues[deId] = {};
-                $scope.dataValues[deId][ocId] = dataValue;
-                $scope.model.dataElementsWithValue.push({id: deId, created: DateUtils.getServerToday()});
-            }
-            else{                                
-                $scope.dataValues[deId][ocId] = dataValue;
-                for( var i=0; i<$scope.model.dataElementsWithValue.length; i++){
-                    if( $scope.model.dataElementsWithValue[i].id === deId ){
-                        $scope.model.dataElementsWithValue[i].created = DateUtils.getServerToday();
-                        break;
-                    }
-                }
-            }
-            
-            $scope.dataValues[deId] = DataEntryUtils.getDataElementTotal( $scope.dataValues, deId);
-            copyDataValues();
-        };*/
         
         var saveSuccessStatus = function(){
             $scope.saveStatus[deId + '-' + ocId].saved = true;
