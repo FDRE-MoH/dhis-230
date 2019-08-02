@@ -365,21 +365,22 @@ customReport.controller('reportController',
         $scope.model.showDimensionFilters = false;
         $scope.model.columns = [];
         
-        var additionalDimensions = [];
-
-        angular.forEach( $scope.model.categoryOptionGroupSets, function(cogs){
-            if( cogs.selectedOptions && cogs.selectedOptions.length ){
-                additionalDimensions.push("dimension=" + cogs.id + ":" + $.map(cogs.selectedOptions, function(co){return co.id;}).join(';') );
-            }
-        });
-
-        angular.forEach( $scope.model.orgUnitGroupSets, function(ougs){
-            if( ougs.selectedOptions && ougs.selectedOptions.length ){
-                additionalDimensions.push("dimension=" + ougs.id + ":" + $.map(ougs.selectedOptions, function(co){return co.id;}).join(';') );
-            }
-        });
-
         if( $scope.model.selectedDataSet.DataSetCategory === 'Disease' ){
+
+            var additionalDimensions = [];
+
+            angular.forEach( $scope.model.categoryOptionGroupSets, function(cogs){
+                if( cogs.selectedOptions && cogs.selectedOptions.length ){
+                    additionalDimensions.push("dimension=" + cogs.id + ":" + $.map(cogs.selectedOptions, function(co){return co.id;}).join(';') );
+                }
+            });
+
+            angular.forEach( $scope.model.orgUnitGroupSets, function(ougs){
+                if( ougs.selectedOptions && ougs.selectedOptions.length ){
+                    additionalDimensions.push("dimension=" + ougs.id + ":" + $.map(ougs.selectedOptions, function(co){return co.id;}).join(';') );
+                }
+            });
+
             var dimension = [];
             var analyticsUrl = "ds=" + $scope.model.selectedDataSet.id;
             analyticsUrl += "&orgUnits=" + $.map($scope.selectedOrgUnits, function(ou){return ou.id;}).join(',');
@@ -442,6 +443,21 @@ customReport.controller('reportController',
             });
         }
         else{
+
+            var additionalFilters = [];
+
+            angular.forEach( $scope.model.categoryOptionGroupSets, function(cogs){
+                if( cogs.selectedOptions && cogs.selectedOptions.length ){
+                    additionalFilters.push("filter=" + cogs.id + ":" + $.map(cogs.selectedOptions, function(co){return co.id;}).join(';') );
+                }
+            });
+
+            angular.forEach( $scope.model.orgUnitGroupSets, function(ougs){
+                if( ougs.selectedOptions && ougs.selectedOptions.length ){
+                    additionalFilters.push("filter=" + ougs.id + ":" + $.map(ougs.selectedOptions, function(co){return co.id;}).join(';') );
+                }
+            });
+
             var dimension = [], filter = '';
             if( $scope.model.reportColumn === 'ORGUNIT' ){
                 dimension.push( "dimension=ou:" + $.map($scope.selectedOrgUnits, function(ou){return ou.id;}).join(';') );
@@ -458,8 +474,8 @@ customReport.controller('reportController',
                 $scope.model.reportName = $scope.model.selectedDataSet.displayName + ' (' + $.map($scope.selectedOrgUnits, function(ou){return ou.name;}).join('; ') + ')'; 
             }
 
-            if ( additionalDimensions.length > 0 ){
-                dimension += '&' + additionalDimensions.join('&');
+            if ( additionalFilters.length > 0 ){
+                filter += '&' + additionalFilters.join('&');
             }
             
             Analytics.getReport($scope.model.selectedDataSet.id, dimension, filter, $scope.model.selectedDataSet.DataSetCategory).then(function(data){
