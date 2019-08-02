@@ -1,32 +1,5 @@
 "use strict";
 
-/*
- * Copyright (c) 2004-2014, University of Oslo
- * All rights reserved.
- *
- * Redistribution and use in source and binary forms, with or without
- * modification, are permitted provided that the following conditions are met:
- * * Redistributions of source code must retain the above copyright notice, this
- *   list of conditions and the following disclaimer.
- * * Redistributions in binary form must reproduce the above copyright notice,
- *   this list of conditions and the following disclaimer in the documentation
- *   and/or other materials provided with the distribution.
- * * Neither the name of the HISP project nor the names of its contributors may
- *   be used to endorse or promote products derived from this software without
- *   specific prior written permission.
- *
- * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
- * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
- * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
- * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR
- * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
- * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
- * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
- * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
- * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
- * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- */
-
 dhis2.util.namespace('dhis2.metadata');
 
 dhis2.metadata.custSeparator   = '.';
@@ -301,25 +274,57 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                     }                    
                 }
                 else if( store === 'dataSets' ){
-                    
+                    var processSection = function( sec ){
+                        var desByOrder = [];
+                        if( sec.dataElements ){
+                            var i = 0;
+                            angular.forEach( sec.dataElements, function(de){
+                                desByOrder[de.id] = ++i;
+                            });
+                        }
+
+                        if( sec.indicators ){
+                            angular.forEach(sec.indicators, function(ind){
+                                ind = processIndicator( ind );
+                                if( ind.params && ind.params.length ){
+                                    var params = [];
+                                    angular.forEach(ind.params, function(param){
+                                        params.push( {id: param, order: desByOrder[param] ? desByOrder[param] : 1} );
+                                    });
+                                    params.sort((a, b) => (a.order > b.order) ? 1 : -1);
+                                    params = Array.from(new Set(params.map( param => param.id)));
+                                    ind.params = params;
+                                };
+                            });
+                        }
+                        if( sec.greyedFields ){
+                            var greyedFields = [];
+                            greyedFields = $.map(sec.greyedFields, function(gf){return gf.dimensionItem;});
+                            sec.greyedFields = greyedFields;
+                        }
+                        return sec;
+                    };
+
+                    var processIndicator = function( ind ){
+                        ind=dhis2.metadata.processMetaDataAttribute(ind);
+                        ind.params=[];
+                        ind=dhis2.metadata.expressionMatcher(ind,'numerator','params',dhis2.metadata.expressionRegex,dhis2.metadata.operatorRegex);
+                        ind=dhis2.metadata.expressionMatcher(ind,'denominator','params',dhis2.metadata.expressionRegex,dhis2.metadata.operatorRegex);
+                        return ind;
+                    };
+
                     if( obj.sections ){
-                        _.each(obj.sections, function(sec){                
-                            if( sec.indicators ){
-                                angular.forEach(sec.indicators, function(ind){
-                                    ind=dhis2.metadata.processMetaDataAttribute(ind);
-                                    ind.params=[];
-                                    ind=dhis2.metadata.expressionMatcher(ind,'numerator','params',dhis2.metadata.expressionRegex,dhis2.metadata.operatorRegex);
-                                    ind=dhis2.metadata.expressionMatcher(ind,'denominator','params',dhis2.metadata.expressionRegex,dhis2.metadata.operatorRegex);
-                                });
-                            }
-                            if( sec.greyedFields ){
-                                var greyedFields = [];
-                                greyedFields = $.map(sec.greyedFields, function(gf){return gf.dimensionItem;});
-                                sec.greyedFields = greyedFields;
-                            }
+                        _.each(obj.sections, function(sec){
+                            sec = processSection( sec );
                         });
                     }
-                    
+
+                    if( obj.indicators ){
+                        angular.forEach(obj.indicators, function(ind){
+                            ind = processIndicator( ind );
+                        });
+                    }
+
                     var dataElements = [];
                     _.each(obj.dataSetElements, function(dse){
                         if( dse.dataElement ){
@@ -327,7 +332,7 @@ dhis2.metadata.getMetaObjects = function( store, objs, url, filter, storage, db,
                         }                            
                     });
                     obj.dataElements = dataElements;
-                    delete obj.dataSetElements;                    
+                    delete obj.dataSetElements;
                 }
                 else if( store === 'validationRules' ){
                     obj.params = [];
