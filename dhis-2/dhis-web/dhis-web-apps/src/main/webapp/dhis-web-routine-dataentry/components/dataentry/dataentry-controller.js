@@ -179,9 +179,8 @@ routineDataEntry.controller('dataEntryController',
         //if the above conditions are not fullfilled return false;
         return false;
         //return (section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || $scope.controllingDataElementGroups[$scope.groupsByMember[de.id]].isDisabled) && !de.controlling_data_element || $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo];
-    }
-    
-        
+    };
+
     $scope.loadDataSetDetails = function(){        
         if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.id && $scope.model.selectedDataSet.periodType){
             
@@ -211,7 +210,7 @@ routineDataEntry.controller('dataEntryController',
                     $scope.model.selectedAttributeOptionCombos['"' + oco.displayName + '"'] = oco.id;
                 });
             }
-            
+
             $scope.model.dataElements = [];
             $scope.tabOrder = {};
             var idx = 0;
@@ -240,13 +239,11 @@ routineDataEntry.controller('dataEntryController',
                         //Here is where the actual code should be changed.
                         //the task is first to find the first data element which contains the option of that data elmeent and then setting the title of that 
                         //dataelment to the serial of that dataelmeent.
-                        if(!$scope.model.dataElements[de.id]){
-                            console.error("Data element not in model",de)
-                        }
-                        if($scope.model.dataElements[de.id]&&$scope.model.dataElements[de.id].labelDEGroup && !takenLabels[$scope.model.dataElements[de.id].labelDEGroup]){
-                            
-                            var dataElement = $scope.model.dataElements[de.id];
-                            
+
+                        var dataElement = $scope.model.dataElements[de.id];
+
+                        if( dataElement && dataElement.labelDEGroup && !takenLabels[dataElement.labelDEGroup]){
+
                             dataElement.displayTitle={};
                             dataElement.displayTitle.serialNumber=dataElement.labelDEGroup;
                             takenLabels[$scope.model.dataElements[de.id].labelDEGroup]=true;
@@ -262,42 +259,32 @@ routineDataEntry.controller('dataEntryController',
                             }
                             
                             //find the name of the specific option using the code
-                            var options=labelOptionSet.options
+                            var options=labelOptionSet.options;
                             for(var i=0; i<options.length; i++){
                                 if( dataElement.labelDEGroup === options[i].code){
                                     $scope.model.dataElements[de.id].displayTitle.displayName= options[i].displayName;
                                     return;
                                 }
                             }
-                            
                         }
-                        
+
                         $scope.tabOrder[de.id] = {};
+
                         if( dataElement && dataElement.categoryCombo ){
                             angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
                                 $scope.tabOrder[de.id][oco.id] = idx++;
                             });
                         }
-                        else{
-                            console.log('dataSet:  ', $scope.model.selectedDataSet.displayName, ', section:  ', section.displayName, ', dataElement:  ', de.id);
+
+                        if( !dataElement ){
+                            console.log('section {', section.displayName, '} contains data element {', de.id, '}. However, this data element is not in data set {', $scope.model.selectedDataSet.displayName, '}. ');
                         }
-                    });
-                    angular.forEach(section.indicators,function(indicator){
-                       angular.forEach(indicator.attributeValues,function(attribute){
-                           var val=attribute.value;
-                           if(val==="true"){
-                               val=true;
-                           }else if(val==="false"){
-                               val=false;
-                           }
-                           indicator[attribute.attribute.code]= val;
-                       }); 
                     });
                 });
             }
         }
     };
-    
+
     var resetParams = function(){
         $scope.dataValues = {};
         $scope.dataValuesCopy = {};
