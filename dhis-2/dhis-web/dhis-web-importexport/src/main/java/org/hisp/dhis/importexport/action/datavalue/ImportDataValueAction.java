@@ -49,6 +49,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import org.hisp.dhis.dxf2.importsummary.ImportSummary;
 
 /**
  * @author Lars Helge Overland
@@ -151,6 +152,24 @@ public class ImportDataValueAction
     }
 
     // -------------------------------------------------------------------------
+    // Output
+    // -------------------------------------------------------------------------
+
+    private ImportSummary summary;
+
+    public ImportSummary getSummary()
+    {
+        return summary;
+    }
+
+    private JobConfiguration jobId;
+
+    public JobConfiguration getJobId()
+    {
+        return jobId;
+    }
+
+    // -------------------------------------------------------------------------
     // Action implementation
     // -------------------------------------------------------------------------
 
@@ -160,16 +179,16 @@ public class ImportDataValueAction
     {
         strategy = strategy != null ? strategy : ImportStrategy.NEW_AND_UPDATES;
 
-        JobConfiguration jobId = new JobConfiguration( "inMemoryDataValueImport",
+        jobId = new JobConfiguration( "inMemoryDataValueImport",
             JobType.DATAVALUE_IMPORT, currentUserService.getCurrentUser().getUid(), true );
 
         notifier.clear( jobId );
 
-        InputStream in = new FileInputStream( upload );
+        InputStream inputStream = new FileInputStream( upload );
 
-        in = StreamUtils.wrapAndCheckCompressionFormat( in );
+        inputStream = StreamUtils.wrapAndCheckCompressionFormat( inputStream );
 
-        ImportOptions options = new ImportOptions().setDryRun( dryRun )
+        ImportOptions importOptions = new ImportOptions().setDryRun( dryRun )
             .setStrategy( strategy )
             .setPreheatCache( preheatCache )
             .setSkipExistingCheck( skipExistingCheck )
@@ -178,10 +197,10 @@ public class ImportDataValueAction
             .setOrgUnitIdScheme( StringUtils.trimToNull( orgUnitIdScheme ) )
             .setFilename( uploadFileName );
 
-        log.info( options );
+        log.info( importOptions );
 
         schedulingManager.executeJob( new ImportDataValueTask( dataValueSetService,
-            adxDataService, sessionFactory, in, options, jobId, importFormat ) );
+            adxDataService, sessionFactory, inputStream, importOptions, jobId, importFormat ) );
 
         return SUCCESS;
     }

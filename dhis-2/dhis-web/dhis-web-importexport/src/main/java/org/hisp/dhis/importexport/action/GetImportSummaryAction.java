@@ -33,7 +33,6 @@ import org.hisp.dhis.dxf2.importsummary.ImportSummary;
 import org.hisp.dhis.scheduling.JobConfiguration;
 import org.hisp.dhis.scheduling.JobType;
 import org.hisp.dhis.system.notification.Notifier;
-import org.hisp.dhis.user.CurrentUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 
 /**
@@ -44,9 +43,6 @@ public class GetImportSummaryAction
 {
     @Autowired
     private Notifier notifier;
-    
-    @Autowired
-    private CurrentUserService currentUserService;
 
     // -------------------------------------------------------------------------
     // Input
@@ -59,15 +55,29 @@ public class GetImportSummaryAction
         this.jobType = jobType;
     }
 
+    private String importJobId;
+
+    public void setImportJobId( String importJobId )
+    {
+        this.importJobId = importJobId;
+    }
+
     // -------------------------------------------------------------------------
     // Output
     // -------------------------------------------------------------------------
-    
+
     private ImportSummary summary;
-    
+
     public ImportSummary getSummary()
     {
         return summary;
+    }
+
+    private JobConfiguration jobId;
+
+    public JobConfiguration getJobId()
+    {
+        return jobId;
     }
 
     // -------------------------------------------------------------------------
@@ -77,10 +87,8 @@ public class GetImportSummaryAction
     @Override
     public String execute()
     {
-        JobConfiguration jobId = new JobConfiguration( null, jobType, currentUserService.getCurrentUser().getUid(), true );
-        
-        summary = (ImportSummary) notifier.getJobSummary( jobId.getJobType() );
-        
+        summary = (ImportSummary) notifier.getJobSummaryByJobId( jobType, importJobId );
+
         return SUCCESS;
     }
 }

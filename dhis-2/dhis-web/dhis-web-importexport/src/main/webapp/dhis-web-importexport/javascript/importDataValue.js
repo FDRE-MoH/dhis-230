@@ -26,7 +26,8 @@ function pingNotificationsTimeout()
 
 function displaySummaryLink()
 {
-	var html = '<tr><td></td><td><a href="javascript:displaySummary()">Display import summary</a></td></tr>';
+        var summaryLink = $( '#importJobId td' ).html();
+	var html = '<tr><td></td><td>' + summaryLink + '</td></tr>';
 	$( '#notificationTable' ).prepend( html );
 }
 
