@@ -189,12 +189,10 @@ customReport.controller('reportRateController',
         $scope.model.reportRows = [];
         $scope.model.reportName = $scope.model.selectedDataSet.displayName + ' - ' + $translate.instant('reporting_rate_summary');
         if( $scope.model.reportColumn === 'ORGUNIT' ){
-            //$scope.model.reportName = $scope.model.selectedDataSet.displayName + ' - ' + $.map($scope.model.selectedPeriods, function(pe){return pe.name;}).join('; '); 
             $scope.model.columns = $scope.selectedOrgUnits;
             $scope.model.reportRows = $scope.model.selectedPeriods;
         }
         else{
-            //$scope.model.reportName = $scope.model.selectedDataSet.displayName + ' - ' + $.map($scope.selectedOrgUnits, function(ou){return ou.name;}).join('; '); 
             $scope.model.columns = $scope.model.selectedPeriods;
             $scope.model.reportRows = orderByFilter( $scope.selectedOrgUnits, '-name').reverse();
         }
