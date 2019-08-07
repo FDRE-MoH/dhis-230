@@ -33,6 +33,7 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import org.apache.commons.lang.ArrayUtils;
 import org.hisp.dhis.analytics.AnalyticsFinancialYearStartKey;
+import org.hisp.dhis.calendar.DateTimeUnit;
 import org.hisp.dhis.common.DxfNamespaces;
 import org.hisp.dhis.i18n.I18nFormat;
 import org.joda.time.DateTime;
@@ -675,22 +676,38 @@ public class RelativePeriods
 
         if ( isLast3Months() )
         {
-            periods.addAll( getRollingRelativePeriodList( new MonthlyPeriodType(), MONTHS_LAST_12, new DateTime( date ).minusMonths( 1 ).toDate(), dynamicNames, format ).subList( 9, 12 ) );
+        	DateTimeUnit cDateTimeUnit = PeriodType.getCalendar().today( new MonthlyPeriodType() );
+        	cDateTimeUnit = PeriodType.getCalendar().minusMonths( new MonthlyPeriodType(), cDateTimeUnit, 1);
+        	DateTimeUnit dateTimeUnit = PeriodType.getCalendar().toIso( new MonthlyPeriodType(), cDateTimeUnit );
+        	
+        	periods.addAll( getRollingRelativePeriodList( new MonthlyPeriodType(), MONTHS_LAST_12, dateTimeUnit.toJdkDate(), dynamicNames, format ).subList( 9, 12 ) );
         }
 
         if ( isLast6Months() )
         {
-            periods.addAll( getRollingRelativePeriodList( new MonthlyPeriodType(), MONTHS_LAST_12, new DateTime( date ).minusMonths( 1 ).toDate(), dynamicNames, format ).subList( 6, 12 ) );
+        	DateTimeUnit cDateTimeUnit = PeriodType.getCalendar().today( new MonthlyPeriodType() );
+        	cDateTimeUnit = PeriodType.getCalendar().minusMonths( new MonthlyPeriodType(), cDateTimeUnit, 1);
+        	DateTimeUnit dateTimeUnit = PeriodType.getCalendar().toIso( new MonthlyPeriodType(), cDateTimeUnit );
+        	
+            periods.addAll( getRollingRelativePeriodList( new MonthlyPeriodType(), MONTHS_LAST_12, dateTimeUnit.toJdkDate(), dynamicNames, format ).subList( 6, 12 ) );
         }
 
         if ( isLast12Months() )
         {
-            periods.addAll( getRollingRelativePeriodList( new MonthlyPeriodType(), MONTHS_LAST_12, new DateTime( date ).minusMonths( 1 ).toDate(), dynamicNames, format ) );
+        	DateTimeUnit cDateTimeUnit = PeriodType.getCalendar().today( new MonthlyPeriodType() );
+        	cDateTimeUnit = PeriodType.getCalendar().minusMonths( new MonthlyPeriodType(), cDateTimeUnit, 1);
+        	DateTimeUnit dateTimeUnit = PeriodType.getCalendar().toIso( new MonthlyPeriodType(), cDateTimeUnit );
+        	
+            periods.addAll( getRollingRelativePeriodList( new MonthlyPeriodType(), MONTHS_LAST_12, dateTimeUnit.toJdkDate(), dynamicNames, format ) );
         }
 
         if ( isLast6BiMonths() )
         {
-            periods.addAll( getRollingRelativePeriodList( new BiMonthlyPeriodType(), BIMONTHS_LAST_6, new DateTime( date ).minusMonths( 2 ).toDate(), dynamicNames, format ) );
+        	DateTimeUnit cDateTimeUnit = PeriodType.getCalendar().today( new BiMonthlyPeriodType() );
+        	cDateTimeUnit = PeriodType.getCalendar().minusMonths( new BiMonthlyPeriodType(), cDateTimeUnit, 2);
+        	DateTimeUnit dateTimeUnit = PeriodType.getCalendar().toIso( new BiMonthlyPeriodType(), cDateTimeUnit );
+        	
+            periods.addAll( getRollingRelativePeriodList( new BiMonthlyPeriodType(), BIMONTHS_LAST_6, dateTimeUnit.toJdkDate(), dynamicNames, format ) );
         }
 
         if ( isLast4Quarters() )
