@@ -34,6 +34,7 @@ customReport.controller('reportRateController',
                     showDiseaseFilters: true,
                     filterCompleteness: false,
                     selectedPeriodType: null,
+                    metaDataLoaded: false,
                     valueExists: false};
                 
     downloadMetaData().then(function(){
@@ -70,6 +71,8 @@ customReport.controller('reportRateController',
                     
                         selectionTreeSelection.setMultipleSelectionAllowed( true );
                         selectionTree.clearSelectedOrganisationUnitsAndBuildTree();
+
+                        $scope.model.metaDataLoaded = true;
                     });
                 });
             });

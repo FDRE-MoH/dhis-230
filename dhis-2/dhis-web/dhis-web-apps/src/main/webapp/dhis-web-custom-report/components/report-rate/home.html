@@ -12,14 +12,22 @@
     <div id="selectionTree" selected-org-units>
     </div>
 
+    <div class="small-horizontal-spacing" ng-if="!model.metaDataLoaded">
+        {{'loading_metadata'| translate}}  <img src="../images/ajax-loader-bar.gif" alt="{{'in_progress'| translate}}"/>
+    </div>
+
 </div>
 <div class="page" id="mainPage">
     <h2 class="hideInPrint">
         {{'reporting_rate_summary'| translate}}
     </h2>
 
+    <div ng-if="!model.metaDataLoaded">
+        {{'loading_metadata'| translate}}  <img src="../images/ajax-loader-bar.gif" alt="{{'in_progress'| translate}}"/>
+    </div>
+
     <!-- selection begins-->
-    <div class="row remove-left-padding hideInPrint">
+    <div class="row remove-left-padding hideInPrint" ng-if="model.metaDataLoaded">
         <form class="form-horizontal col-sm-9" role="form" name="reportForm" novalidate>
             <div class="panel report-panel-color">
                 <div class="panel-heading mouse-pointer" ng-click="model.showReportFilters = !model.showReportFilters">
