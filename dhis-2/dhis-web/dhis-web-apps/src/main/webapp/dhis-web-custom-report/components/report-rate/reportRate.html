@@ -71,9 +71,19 @@
                     </th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody ng-if="model.filterCompleteness" ng-repeat="reportRow in model.reportRows">
+                <tr ng-repeat="(key, value) in model.categoryOptionGroupSets">
+                    <td>
+                        {{reportRow.name}} - {{model.filterGroups[key]}}
+                    </td>
+                    <td class="pull-center" ng-repeat="col in model.rateColumns">
+                        {{dataValues[col.id + "-" + key + "-" +  reportRow.id]}}
+                    </td>
+                </tr>
+            </tbody>
+            <tbody ng-if="!model.filterCompleteness">
                 <tr ng-repeat="reportRow in model.reportRows">
-                    <td class="pull-center">
+                    <td>
                         {{reportRow.name}}
                     </td>
                     <td class="pull-center" ng-repeat="col in model.rateColumns">

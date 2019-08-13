@@ -7,7 +7,6 @@ var customReport = angular.module('customReport');
 //Controller for settings page
 customReport.controller('reportRateController',
         function($scope,
-                $modal,
                 $filter,
                 $translate,
                 orderByFilter,
@@ -21,6 +20,7 @@ customReport.controller('reportRateController',
     $scope.model = {dataSets: [],
                     reportColumn: 'PERIOD',
                     categoryCombos: [],
+                    filterGroups: [],
                     categoryOptionGroupSets: {},
                     showDiseaseGroup: false,
                     periods: [],
@@ -38,41 +38,49 @@ customReport.controller('reportRateController',
                     valueExists: false};
                 
     downloadMetaData().then(function(){
+
         console.log( 'Finished loading meta-data' );
-        MetaDataFactory.getAll('dataSets').then(function(ds){
-            $scope.model.dataSets = ds;
 
-            MetaDataFactory.getAll('periodTypes').then(function(pts){
-                pts = orderByFilter(pts, '-frequencyOrder').reverse();
-                $scope.model.periodTypes = pts;
-                MetaDataFactory.getAll('categoryCombos').then(function(ccs){
-                    angular.forEach(ccs, function(cc){
-                        $scope.model.categoryCombos[cc.id] = cc;
-                    });                    
-                    
-                    
-                    MetaDataFactory.getAll('categoryOptionGroupSets').then(function(cogss){                        
-                        angular.forEach(cogss, function(cogs){
-                            if( cogs.completenessFilter ){
-                                angular.forEach(cogs.categoryOptionGroups, function(cog){
-                                    if( cog.categoryOptions && cog.categoryOptions.length > 0 ){
-                                        $scope.model.categoryOptionGroupSets[cog.id] = $.map(cog.categoryOptions, function(co){return co.id;});                                        
-                                    }
-                                });
-                            }
+        MetaDataFactory.getAll('organisationUnitGroupSets').then(function( ougs ){
+
+            $scope.model.orgUnitGroupSets = ougs;
+
+            MetaDataFactory.getAll('dataSets').then(function(ds){
+                $scope.model.dataSets = ds;
+
+                MetaDataFactory.getAll('periodTypes').then(function(pts){
+                    pts = orderByFilter(pts, '-frequencyOrder').reverse();
+                    $scope.model.periodTypes = pts;
+                    MetaDataFactory.getAll('categoryCombos').then(function(ccs){
+                        angular.forEach(ccs, function(cc){
+                            $scope.model.categoryCombos[cc.id] = cc;
                         });
-                        
-                        $scope.model.baseRateColumns = [  
-                            {id: "expected", name: $translate.instant('expected')},
-                            {id: "actual", name: $translate.instant('actual')},
-                            {id: "rate", name: $translate.instant('rate')},
-                            {id: "timely", name: $translate.instant('timely')}
-                        ],
-                    
-                        selectionTreeSelection.setMultipleSelectionAllowed( true );
-                        selectionTree.clearSelectedOrganisationUnitsAndBuildTree();
 
-                        $scope.model.metaDataLoaded = true;
+
+                        MetaDataFactory.getAll('categoryOptionGroupSets').then(function(cogss){
+                            angular.forEach(cogss, function(cogs){
+                                if( cogs.completenessFilter ){
+                                    angular.forEach(cogs.categoryOptionGroups, function(cog){
+                                        if( cog.categoryOptions && cog.categoryOptions.length > 0 ){
+                                            $scope.model.categoryOptionGroupSets[cog.id] = $.map(cog.categoryOptions, function(co){return co.id;});
+                                            $scope.model.filterGroups[cog.id] = cog.displayName;
+                                        }
+                                    });
+                                }
+                            });
+
+                            $scope.model.baseRateColumns = [
+                                {id: "expected", name: $translate.instant('expected')},
+                                {id: "actual", name: $translate.instant('actual')},
+                                {id: "rate", name: $translate.instant('rate')},
+                                {id: "timely", name: $translate.instant('timely')}
+                            ],
+
+                            selectionTreeSelection.setMultipleSelectionAllowed( true );
+                            selectionTree.clearSelectedOrganisationUnitsAndBuildTree();
+
+                            $scope.model.metaDataLoaded = true;
+                        });
                     });
                 });
             });
@@ -156,7 +164,14 @@ customReport.controller('reportRateController',
             DataEntryUtils.notify('error', 'please_select_dataset');
             return;
         }
-        
+
+        var additionalFilters = [];
+        angular.forEach( $scope.model.orgUnitGroupSets, function(ougs){
+            if( ougs.selectedOptions && ougs.selectedOptions.length ){
+                additionalFilters.push("filter=" + ougs.id + ":" + $.map(ougs.selectedOptions, function(co){return co.id;}).join(';') );
+            }
+        });
+
         var periodIds = $.map($scope.model.selectedPeriods, function(pe){return pe.id;}).join(';');
         var orgUnitIds = $.map($scope.selectedOrgUnits, function(ou){return ou.id;}).join(';');
         var dimensions = [];
@@ -182,6 +197,10 @@ customReport.controller('reportRateController',
         
         var analyticsUrl = "skipMeta=true&includeNumDen=true&";
         analyticsUrl += dimensions.join('&');
+        
+        if ( additionalFilters.length > 0 ){
+            analyticsUrl += '&' + additionalFilters.join('&');
+        }
         
         var expectedUrl = analyticsUrl + '&filter=dx:' + $scope.model.selectedDataSet.id + ".EXPECTED_REPORTS";
         var actualUrl = analyticsUrl + '&filter=dx:' + $scope.model.selectedDataSet.id + ".ACTUAL_REPORTS";
@@ -210,8 +229,8 @@ customReport.controller('reportRateController',
         $scope.model.reportStarted = true;
         $scope.model.reportReady = false;
         $scope.model.showReportFilters = false;
-        
-        var getRow = function( rowData ){
+
+        var tagRow = function( rowData ){
             if( !$scope.model.categoryOptionGroupSets || 
                     Object.keys( $scope.model.categoryOptionGroupSets ).length === 0 || 
                     !$scope.model.categoryIds ||
@@ -219,30 +238,25 @@ customReport.controller('reportRateController',
                     $scope.model.categoryIds.length === 0 ){
                 return rowData;
             }
-            var present = [];
+
             for( var i=0; i<$scope.model.categoryIds.length; i++){
                 var id = $scope.model.categoryIds[i];                
                 for( var key in $scope.model.categoryOptionGroupSets ){
                     var options = $scope.model.categoryOptionGroupSets[key];
                     if( options.indexOf( rowData[id] ) !== -1 ){
-                        present.push('t');
-                        rowData['group-' + key] = rowData[id];
+                        rowData['group'] = key;
                         break;
                     }
                 }
             }
-            
-            if( present.length === $scope.model.categoryIds.length ){
-                return rowData;
-            }
-            return null;
+            return rowData;
         };
-        
-        var filterOutRows = function( data ){
+
+        var tagRows = function( data ){
             if( data && data.length > 0 ){
                 var rows = [];
                 for( var i=0; i<data.length; i++ ){
-                    var r = getRow( data[i] );
+                    var r = tagRow( data[i] );
                     if ( r ){
                         rows.push( r );
                     }
@@ -251,45 +265,35 @@ customReport.controller('reportRateController',
             }
             return data;
         };
-        
-        var getKey = function( type, cols ){            
-            if (!type && !cols || cols.length === 0 ){
-                return null;
-            }
-            
-            var _cols = $scope.model.reportColumn === 'ORGUNIT' ? cols : cols.reverse();
-            if( type ){
-                _cols = [type].concat(_cols );
-            }
-            
-            return _cols.join('-');
-        };
-        
-        var processRows = function( type, data ){            
+
+        var filterRows = function( type, data ){
+
             if( data && data.length > 0 ){
+
                 var rows = [];
-                var processedRows = [];
+
                 angular.forEach($scope.selectedOrgUnits, function(ou){
-                    var oud = $filter('filter')(data, {ou: ou.id});
+
+                    var ouData = $filter('filter')(data, {ou: ou.id});
+
                     angular.forEach($scope.model.selectedPeriods, function(pe){
-                        var peds = $filter('filter')(oud, {pe: pe.id});                        
+
+                        var prData = $filter('filter')(ouData, {pe: pe.id});
+
                         for( var key in $scope.model.categoryOptionGroupSets ){
-                            if( $scope.model.categoryOptionGroupSets[key].length> 0 ){
-                                var cogd = [];
-                                angular.forEach(peds, function(ped){
-                                    if( ped['group-' + key] ){
-                                        cogd.push(ped);
-                                    }
-                                });
-                                var valueKey = '-value';
-                                if( type === 'rate' || type === 'timely' ){
-                                    valueKey = '-numerator';
-                                }
-                                cogd = orderByFilter( cogd, valueKey ).reverse();                                
-                                if( cogd.length > 0 && processedRows.indexOf( Object.values( cogd[0] ).join('-')) === -1 ){
-                                    rows = rows.concat( cogd[0] );
-                                    processedRows.push( Object.values( cogd[0] ).join('-') );
-                                }
+
+                            var grData = $filter('filter')(prData, {group: key});
+
+                            var valueKey = '-value';
+
+                            if( type === 'rate' || type === 'timely' ){
+                                valueKey = '-numerator';
+                            }
+
+                            grData = orderByFilter( grData, valueKey ).reverse();
+
+                            if( grData.length > 0 ){
+                                rows = rows.concat( grData[0] );
                             }
                         }
                     });
@@ -298,75 +302,142 @@ customReport.controller('reportRateController',
             }
             return data;
         };
-        
+
+        var getKey = function( type, cols ){            
+            if (!type || !cols || !cols.length || cols.length === 0 ){
+                return null;
+            }
+
+            var _cols = $scope.model.reportColumn === 'ORGUNIT' ? cols : cols.reverse();
+            if( type ){
+                _cols = [type].concat(_cols );
+            }
+
+            return _cols.join('-');
+        };
+
         var getTotal = function( type, data ){
+
             var d = {};
+
             if( data && data.length > 0 ){
+
                 angular.forEach($scope.selectedOrgUnits, function(ou){
-                    var oud = $filter('filter')(data, {ou: ou.id});
+
+                    var ouData = $filter('filter')(data, {ou: ou.id});
+
                     angular.forEach($scope.model.selectedPeriods, function(pe){
-                        var peds = $filter('filter')(oud, {pe: pe.id});                        
-                        var key = getKey( type, [ou.id, pe.id] );
-                        var t = 0;
-                        angular.forEach(peds, function(ped){
-                            if( $scope.model.filterCompleteness && (type === 'rate' || type === 'timely') ){
-                                t += parseInt(ped.numerator);
+
+                        var prData = $filter('filter')(ouData, {pe: pe.id});
+
+                        if( $scope.model.filterCompleteness ){
+
+                            for( var key in $scope.model.categoryOptionGroupSets ){
+
+                                var grData = $filter('filter')(prData, {group: key});
+
+                                var k = getKey( type, [ou.id, key, pe.id] );
+
+                                var t = 0;
+
+                                angular.forEach(grData, function(gd){
+
+                                    if( $scope.model.filterCompleteness && (type === 'rate' || type === 'timely') ){
+                                        t += parseInt(gd.numerator);
+                                    }
+                                    else{
+                                        t += parseFloat(gd.value); 
+                                    }
+
+                                });
+
+                                d[k] = t;
                             }
-                            else{
-                                t += parseFloat(ped.value); 
-                            }
-                        });
-                        d[key] = t;
+                        }
+                        else{
+                            var k = getKey( type, [ou.id, pe.id] );
+
+                            var t = 0;
+
+                            angular.forEach(prData, function(pd){
+
+                                if( $scope.model.filterCompleteness && (type === 'rate' || type === 'timely') ){
+                                    t += parseInt(pd.numerator);
+                                }
+                                else{
+                                    t += parseFloat(pd.value); 
+                                }
+
+                            });
+
+                            d[k] = t;
+                        }
+
                     });
                 });
             }
             return d;
         };
-        
+
         var calculatePercentages = function(){
             if( $scope.model.filterCompleteness ){
                 angular.forEach($scope.selectedOrgUnits, function(ou){
                     angular.forEach($scope.model.selectedPeriods, function(pe){
+                        for( var key in $scope.model.categoryOptionGroupSets ){
+                            var rateKey = getKey( 'rate', [ou.id, key, pe.id] );
+                            var timelyKey = getKey( 'timely', [ou.id, key, pe.id] );                        
+                            var denKey = getKey( 'expected', [ou.id, key, pe.id] );
+
+                            $scope.dataValues[rateKey] = DataEntryUtils.getPercent( $scope.dataValues[rateKey], $scope.dataValues[denKey] );                        
+                            $scope.dataValues[timelyKey] = DataEntryUtils.getPercent( $scope.dataValues[timelyKey], $scope.dataValues[denKey] );
+                        }
+                    });
+                });
+            }
+            else{
+                angular.forEach($scope.selectedOrgUnits, function(ou){
+                    angular.forEach($scope.model.selectedPeriods, function(pe){
+                        
                         var rateKey = getKey( 'rate', [ou.id, pe.id] );
                         var timelyKey = getKey( 'timely', [ou.id, pe.id] );                        
                         var denKey = getKey( 'expected', [ou.id, pe.id] );
-                        
-                        $scope.dataValues[rateKey] = DataEntryUtils.getPercent( $scope.dataValues[rateKey], $scope.dataValues[denKey] );                        
+
+                        $scope.dataValues[rateKey] = DataEntryUtils.getPercent( $scope.dataValues[rateKey], $scope.dataValues[denKey] );
                         $scope.dataValues[timelyKey] = DataEntryUtils.getPercent( $scope.dataValues[timelyKey], $scope.dataValues[denKey] );
                     });
                 });
             }
         };
-        
+
         $scope.dataValues = {};
-        
+
         Analytics.getData( completenessUrl ).then(function( cData ){
 
             Analytics.getData( timelinessUrl ).then(function( tData ){
-                    
+
                 Analytics.getData( actualUrl ).then(function( aData ){
-                    
+
                     Analytics.getData( expectedUrl ).then(function( eData ){
-                        
+
                         if( $scope.model.filterCompleteness ){
-                            cData = filterOutRows( cData );
-                            tData = filterOutRows( tData );
-                            aData = filterOutRows( aData );
-                            eData = filterOutRows( eData );
-                            
-                            cData = processRows( 'rate', cData );
-                            tData = processRows( 'timely', tData );
-                            aData = processRows( 'actual', aData );
-                            eData = processRows( 'expected', eData );
+                            cData = tagRows( cData );
+                            tData = tagRows( tData );
+                            aData = tagRows( aData );
+                            eData = tagRows( eData );
+
+                            cData = filterRows( 'rate', cData );
+                            tData = filterRows( 'timely', tData );
+                            aData = filterRows( 'actual', aData );
+                            eData = filterRows( 'expected', eData );
                         }
-                        
+
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'rate', cData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'timely', tData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'actual', aData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'expected', eData ));
-                        
+
                         calculatePercentages();
-                        
+
                         $scope.model.reportReady = true;
                         $scope.model.reportStarted = false;
                     });
@@ -374,7 +445,7 @@ customReport.controller('reportRateController',
             });
         });
     };
-    
+
     $scope.exportData = function () {
         var blob = new Blob([document.getElementById('exportTable').innerHTML], {
             type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8"
