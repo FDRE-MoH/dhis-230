@@ -262,8 +262,8 @@ routineDataEntry.controller('dataEntryController',
                             var options=labelOptionSet.options;
                             for(var i=0; i<options.length; i++){
                                 if( dataElement.labelDEGroup === options[i].code){
-                                    $scope.model.dataElements[de.id].displayTitle.displayName= options[i].displayName;
-                                    return;
+                                    $scope.model.dataElements[de.id].displayTitle.displayName = options[i].displayName;
+                                    break;
                                 }
                             }
                         }
