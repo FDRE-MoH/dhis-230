@@ -16,7 +16,7 @@ customReport.controller('reportRateController',
                 Analytics) { 
     $scope.periodOffset = 0;
     $scope.maxOptionSize = 30;
-    $scope.dataValues = {expected: {}, actual: {}, rate: {}, timely: {}};
+    $scope.dataValues = {expected: {}, actual: {}, completed: {}, rate: {}, ontime: {}, timely: {}};
     $scope.model = {dataSets: [],
                     reportColumn: 'PERIOD',
                     categoryCombos: [],
@@ -72,7 +72,9 @@ customReport.controller('reportRateController',
                             $scope.model.baseRateColumns = [
                                 {id: "expected", name: $translate.instant('expected')},
                                 {id: "actual", name: $translate.instant('actual')},
+                                {id: "completed", name: $translate.instant('completed')},
                                 {id: "rate", name: $translate.instant('rate')},
+                                {id: "ontime", name: $translate.instant('ontime')},
                                 {id: "timely", name: $translate.instant('timely')}
                             ],
 
@@ -342,7 +344,7 @@ customReport.controller('reportRateController',
 
                                 angular.forEach(grData, function(gd){
 
-                                    if( $scope.model.filterCompleteness && (type === 'rate' || type === 'timely') ){
+                                    if( type === 'rate' || type === 'timely' || type === 'completed' || type === 'ontime' ){
                                         t += parseInt(gd.numerator);
                                     }
                                     else{
@@ -361,7 +363,7 @@ customReport.controller('reportRateController',
 
                             angular.forEach(prData, function(pd){
 
-                                if( $scope.model.filterCompleteness && (type === 'rate' || type === 'timely') ){
+                                if( type === 'rate' || type === 'timely' || type === 'completed' || type === 'ontime' ){
                                     t += parseInt(pd.numerator);
                                 }
                                 else{
@@ -430,11 +432,13 @@ customReport.controller('reportRateController',
                             aData = filterRows( 'actual', aData );
                             eData = filterRows( 'expected', eData );
                         }
-
+                        
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'rate', cData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'timely', tData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'actual', aData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'expected', eData ));
+                        $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'completed', cData ));
+                        $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'ontime', tData ));
 
                         calculatePercentages();
 
