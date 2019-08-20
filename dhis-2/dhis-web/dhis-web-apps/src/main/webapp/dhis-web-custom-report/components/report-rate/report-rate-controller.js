@@ -292,7 +292,7 @@ customReport.controller('reportRateController',
                                 valueKey = '-numerator';
                             }
 
-                            grData = orderByFilter( grData, valueKey ).reverse();
+                            grData = orderByFilter( grData, valueKey );
 
                             if( grData.length > 0 ){
                                 rows = rows.concat( grData[0] );

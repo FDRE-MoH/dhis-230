@@ -332,7 +332,15 @@ var customReportServices = angular.module('customReportServices', ['ngResource']
                 if ( data && data.headers && data.headers.length > 0 && data.rows && data.rows.length > 0 ){
                     for(var i=0; i<data.rows.length; i++){
                         var r = {}, d = data.rows[i];
-                        for(var j=0; j<data.headers.length; j++){                            
+                        for(var j=0; j<data.headers.length; j++){
+
+                            if ( data.headers[j].name === 'numerator' || data.headers[j].name === 'denominator' ){
+                                d[j] = parseInt( d[j] );
+                            }
+                            else if( data.headers[j].name === 'value' ){
+                                d[j] = parseFloat( d[j] );
+                            }
+
                             r[data.headers[j].name] = d[j];
                         }
                         
