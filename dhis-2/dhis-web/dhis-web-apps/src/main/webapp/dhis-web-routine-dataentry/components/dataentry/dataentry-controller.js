@@ -164,6 +164,11 @@ routineDataEntry.controller('dataEntryController',
     }
     
     $scope.checkDisabled = function (section,de,oco){
+
+        if($scope.model && $scope.model.dataSetCompletness && $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo]){
+            return true;//If dataSet is marked complete, gray out all fields.
+        }
+        
         if(de.controlling_data_element){//if data element is a controlling data element return false (is not disabled)
                                         //it is only disabled when the dataSet is marked complete.
             return false;
