@@ -36,7 +36,6 @@ import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlRootElement;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 
-import org.hisp.dhis.calendar.DateTimeUnit;
 import org.hisp.dhis.category.CategoryCombo;
 import org.hisp.dhis.category.CategoryOptionCombo;
 import org.hisp.dhis.common.*;
@@ -402,13 +401,6 @@ public class DataElement
             period = periodType.getPreviousPeriod( period );
 
             period = periodType.getNextPeriod( period, periods );
-
-            if ( !PeriodType.getCalendar().isIso8601() )
-            {
-            	DateTimeUnit start = PeriodType.getCalendar().today( periodType );
-
-            	period = periodType.createPeriod( start.toJdkDate() );
-            }
 
             return period;
         }
