@@ -16,7 +16,7 @@ customReport.controller('reportRateController',
                 Analytics) { 
     $scope.periodOffset = 0;
     $scope.maxOptionSize = 30;
-    $scope.dataValues = {expected: {}, actual: {}, completed: {}, rate: {}, ontime: {}, timely: {}};
+    $scope.dataValues = {expected: {}, actual: {}, rate: {}, ontime: {}, timely: {}};
     $scope.model = {dataSets: [],
                     reportColumn: 'PERIOD',
                     categoryCombos: [],
@@ -72,7 +72,6 @@ customReport.controller('reportRateController',
                             $scope.model.baseRateColumns = [
                                 {id: "expected", name: $translate.instant('expected')},
                                 {id: "actual", name: $translate.instant('actual')},
-                                {id: "completed", name: $translate.instant('completed')},
                                 {id: "rate", name: $translate.instant('rate')},
                                 {id: "ontime", name: $translate.instant('ontime')},
                                 {id: "timely", name: $translate.instant('timely')}
@@ -437,7 +436,6 @@ customReport.controller('reportRateController',
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'timely', tData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'actual', aData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'expected', eData ));
-                        $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'completed', cData ));
                         $scope.dataValues = Object.assign($scope.dataValues, getTotal( 'ontime', tData ));
 
                         calculatePercentages();
