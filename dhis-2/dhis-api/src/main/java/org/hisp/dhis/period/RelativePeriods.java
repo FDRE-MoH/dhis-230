@@ -552,13 +552,13 @@ public class RelativePeriods
 
         if ( isThisDay() )
         {
-            Date calendarDate = _date != null ? _date : PeriodType.getCalendar().today( new DailyPeriodType() ).toJdkDate();
+            Date calendarDate = _date != null ? _date : PeriodType.getCalendar().today();
             periods.add( getRelativePeriod( new DailyPeriodType(), THISDAY, calendarDate, dynamicNames, format ) );
         }
 
         if ( isYesterday() )
         {
-            Date calendarDate = _date != null ? _date : PeriodType.getCalendar().today( new DailyPeriodType() ).toJdkDate();
+            Date calendarDate = _date != null ? _date : PeriodType.getCalendar().today();
             periods.add( getRelativePeriod( new DailyPeriodType(), YESTERDAY, new DateTime( calendarDate ).minusDays( 1 ).toDate(), dynamicNames, format ) );
         }
 
@@ -579,13 +579,13 @@ public class RelativePeriods
 
         if ( isThisWeek() )
         {
-            Date calendarDate = _date != null ? _date : PeriodType.getCalendar().today( new WeeklyPeriodType() ).toJdkDate();
+            Date calendarDate = _date != null ? _date : PeriodType.getCalendar().today();
             periods.add( getRelativePeriod( new WeeklyPeriodType(), LAST_WEEK, calendarDate, dynamicNames, format ) );
         }
 
         if ( isLastWeek() )
         {
-            Date calendarDate = _date != null ? _date : PeriodType.getCalendar().today( new WeeklyPeriodType() ).toJdkDate();
+            Date calendarDate = _date != null ? _date : PeriodType.getCalendar().today();
             periods.add( getRelativePeriod( new WeeklyPeriodType(), LAST_WEEK, new DateTime( calendarDate ).minusWeeks( 1 ).toDate(), dynamicNames, format ) );
         }
 
