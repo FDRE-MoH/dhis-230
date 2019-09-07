@@ -33,6 +33,7 @@ import org.hisp.dhis.calendar.ChronologyBasedCalendar;
 import org.hisp.dhis.calendar.DateTimeUnit;
 import org.hisp.dhis.period.PeriodType;
 import org.hisp.dhis.period.WeeklyAbstractPeriodType;
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.chrono.EthiopicChronology;
 import org.springframework.stereotype.Component;
@@ -104,7 +105,12 @@ public class EthiopianCalendar extends ChronologyBasedCalendar
     @Override
     public DateTimeUnit fromIso( PeriodType periodType, DateTimeUnit dateTimeUnit )
     {
-        return super.fromIso( periodType, dateTimeUnit );
+    	if ( WeeklyAbstractPeriodType.class.isAssignableFrom( periodType.getClass() ) )
+    	{
+    		return super.fromIso( periodType, dateTimeUnit );
+    	}
+
+        return bumpPagume( super.fromIso( periodType, dateTimeUnit ) );
     }
 
     @Override
@@ -319,14 +325,27 @@ public class EthiopianCalendar extends ChronologyBasedCalendar
     {
         return fromIso( periodType, super.isoStartOfYear( periodType, year ) );
     }
-    
+
+    @Override
+    public DateTimeUnit today( PeriodType periodType )
+    {
+        DateTime dateTime = DateTime.now( EthiopicChronology.getInstance( DateTimeZone.getDefault() ) );
+        return new DateTimeUnit( dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(), true );
+    }
+
+    @Override
+    public Date today()
+    {
+    	return DateTime.now( EthiopicChronology.getInstance() ).toLocalDate().toDate();
+    }
+
     private DateTimeUnit bumpPagume( DateTimeUnit dateTimeUnit )
     {
-        if ( dateTimeUnit.getMonth() == 13 ) //bump Pagume to Meskerem
+        if ( dateTimeUnit.getMonth() == 13 )
         {
             dateTimeUnit.setDate( dateTimeUnit.getYear() + 1, 1, 1);
         }
-        
+
         return dateTimeUnit;
     }
 }

@@ -37,6 +37,7 @@ import org.joda.time.chrono.ISOChronology;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -196,6 +197,12 @@ public abstract class AbstractCalendar implements Calendar
         DateTime dateTime = DateTime.now( ISOChronology.getInstance( DateTimeZone.getDefault() ) );
         DateTimeUnit dateTimeUnit = new DateTimeUnit( dateTime.getYear(), dateTime.getMonthOfYear(), dateTime.getDayOfMonth(), true );
         return fromIso( periodType, dateTimeUnit );
+    }
+
+    @Override
+    public Date today()
+    {
+    	return new Date();
     }
 
     @Override

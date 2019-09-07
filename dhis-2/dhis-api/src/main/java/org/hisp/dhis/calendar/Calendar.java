@@ -213,6 +213,13 @@ public interface Calendar
     DateTimeUnit today( PeriodType periodType );
 
     /**
+     * Gets current date
+     *
+     * @return Today date
+     */
+    Date today();
+
+    /**
      * Gets the number of months in a calendar year.
      *
      * @return Number of months in a year
