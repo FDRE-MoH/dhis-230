@@ -117,7 +117,13 @@ customReport.controller('reportController',
         $scope.model.indicators = [];
         $scope.model.columns = [];
         $scope.dataValues = {};
+        $scope.model.greyedFields = [];
         if( angular.isObject( $scope.model.selectedDataSet ) ) {
+            angular.forEach($scope.model.selectedDataSet.sections, function(section){
+                if(section.greyedFields && section.greyedFields.length > 0){
+                    $scope.model.greyedFields = $scope.model.greyedFields.concat( section.greyedFields );
+                }
+            });
             
             $scope.model.selectedAttributeCategoryCombo = null;     
             if( $scope.model.selectedDataSet && 

@@ -109,7 +109,7 @@
                     </td>
                 </tr>
 
-                <tr class="de-style" ng-repeat="oco in ocos">
+                <tr class="de-style" ng-repeat="oco in ocos" ng-if="model.greyedFields.indexOf(de.id + '.' + oco.id) === -1">
                     <td>
                         <!-- serial number location-->
                         {{(de.serial_number && ocos.length >= 1) ? (de.serial_number + ".") : ''}} {{ocos.length <=1? ' ' : $index+1 }}
