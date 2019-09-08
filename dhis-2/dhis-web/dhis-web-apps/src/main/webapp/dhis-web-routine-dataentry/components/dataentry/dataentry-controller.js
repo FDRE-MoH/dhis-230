@@ -277,7 +277,9 @@ routineDataEntry.controller('dataEntryController',
 
                         if( dataElement && dataElement.categoryCombo ){
                             angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function(oco){
-                                $scope.tabOrder[de.id][oco.id] = idx++;
+                                if( !section.greyedFields || section.greyedFields.length === 0 || section.greyedFields.indexOf(de.id + '.' + oco.id) === -1 ){
+                                    $scope.tabOrder[de.id][oco.id] = idx++;
+                                }
                             });
                         }
 
