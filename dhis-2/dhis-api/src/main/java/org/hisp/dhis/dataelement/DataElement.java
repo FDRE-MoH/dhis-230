@@ -394,7 +394,7 @@ public class DataElement
 
         if ( periodType != null )
         {
-            Period period = periodType.createPeriod();
+        	Period period = periodType.createPeriod( PeriodType.getCalendar().today() );
 
             // Rewind one as 0 open periods implies current period is locked
 
