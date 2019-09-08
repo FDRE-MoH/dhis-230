@@ -175,65 +175,6 @@ planSetting.controller('dataEntryController',
         return false;
         //return (section.greyedFields.indexOf(de.id+'.'+oco.id) !== -1 || $scope.controllingDataElementGroups[$scope.groupsByMember[de.id]].isDisabled) && !de.controlling_data_element || $scope.model.dataSetCompletness[$scope.model.selectedAttributeOptionCombo];
 	}
-    
-    $scope.performAutoZero = function(section){
-        var dataValueSet = {
-            dataSet: $scope.model.selectedDataSet.id,
-            period: $scope.model.selectedPeriod.id,
-            orgUnit: $scope.selectedOrgUnit.id,
-            dataValues: []
-        };
-        var counter=0;
-
-        angular.forEach(section.dataElements, function (dataElement) {
-            dataElement = $scope.model.dataElements[dataElement.id];
-            if (dataElement && (dataElement.valueType === 'NUMBER' || dataElement.valueType === "INTEGER" || dataElement.valueType === "INTEGER_ZERO_OR_POSITIVE")) {
-                angular.forEach($scope.model.categoryCombos[dataElement.categoryCombo.id].categoryOptionCombos, function (categoryOptionCombo) {
-                    //check if the data value of the data element has a catagoroptiondownloaded
-                    if (!$scope.dataValues[dataElement.id]) {
-                        $scope.dataValues[dataElement.id] = {};
-                    }
-                    //check if the category option is null or had a value
-                    if (!$scope.dataValues[dataElement.id][categoryOptionCombo.id]) {
-                        counter=counter+1;
-                        var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: '0'};
-                        dataValueSet.dataValues.push(val);
-
-                    }
-                    //check if dataValue of thte data element and the exists but it's value is empty or null.
-                    else if ($scope.dataValues[dataElement.id][categoryOptionCombo.id].value === '' || $scope.dataValues[dataElement.id][categoryOptionCombo.id].value === "" || $scope.dataValues[dataElement.id][categoryOptionCombo.id].value === null) {
-                        counter=counter+1;
-                        var val = {dataElement: dataElement.id, categoryOptionCombo: categoryOptionCombo.id, value: '0'};
-                        dataValueSet.dataValues.push(val);
-                    }
-                });
-            }
-        });
-        var modalOptions = {
-            closeButtonText: 'no',
-            actionButtonText: 'yes',
-            headerText: 'fill_zero',
-            bodyText: $translate.instant('are_you_sure_you_want_to_fill')+" "+ counter
-        };
-
-        ModalService.showModal({}, modalOptions).then(function (result) {
-            angular.forEach(dataValueSet.dataValues,function (dataValue){
-                if (!$scope.dataValues[dataValue.dataElement][dataValue.categoryOptionCombo]) {
-                    $scope.dataValues[dataValue.dataElement][dataValue.categoryOptionCombo] = {};
-                }
-                $scope.dataValues[dataValue.dataElement][dataValue.categoryOptionCombo].value=0;
-            });
-            DataValueService.saveDataValueSet(dataValueSet).then(function (response) {
-                copyDataValues();
-                console.log("successfully saved", response);
-
-            }, function () {
-                console.log("error when saving");
-            });
-        });
-        //performing the save
-
-    };
         
     $scope.loadDataSetDetails = function(){        
         if( $scope.model.selectedDataSet && $scope.model.selectedDataSet.id && $scope.model.selectedDataSet.periodType){
