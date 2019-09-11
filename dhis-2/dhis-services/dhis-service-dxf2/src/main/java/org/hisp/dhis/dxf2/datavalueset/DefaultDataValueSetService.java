@@ -736,6 +736,7 @@ public class DefaultDataValueSetService
                 final DataSet dataSet = dataSetMap.get( trimToNull( completeDataSet.getDataSet() ), dataSetCallable.setId( trimToNull( completeDataSet.getDataSet() ) ) );
                 final Period period = periodMap.get( trimToNull( completeDataSet.getPeriod() ), periodCallable.setId( trimToNull( completeDataSet.getPeriod() ) ) );
                 final OrganisationUnit orgUnit = orgUnitMap.get( trimToNull( completeDataSet.getOrgUnit() ), orgUnitCallable.setId( trimToNull( completeDataSet.getOrgUnit() ) ) );
+                final String storedBy = completeDataSet.getStoredBy();
                 CategoryOptionCombo attrOptionCombo = optionComboMap.get( trimToNull( completeDataSet.getAttributeOptionCombo() ), attributeOptionComboCallable.setId( trimToNull( completeDataSet.getAttributeOptionCombo() ) ) );
 
                 // ---------------------------------------------------------------------
@@ -762,7 +763,7 @@ public class DefaultDataValueSetService
                     continue;
                 }
         
-                if ( dataSet != null && !aclService.canDataWrite( currentUser, dataSet ) )
+                if ( dataSet != null && !aclService.canDataRead( currentUser, dataSet ) )
                 {
                     summary.getConflicts().add( new ImportConflict( completeDataSet.getDataSet(), "User does not have write access for DataSet: " + dataSet.getUid()) );
                     //summary.setStatus( ImportStatus.ERROR );
@@ -806,6 +807,7 @@ public class DefaultDataValueSetService
                 internalCdsr.setSource( orgUnit );
                 internalCdsr.setAttributeOptionCombo( attrOptionCombo );
                 internalCdsr.setDate( completeDate );
+                internalCdsr.setStoredBy(storedBy);
                 
                 CompleteDataSetRegistration existingCdsr = !skipExistingCheck ? cdsrBatchHandler.findObject( internalCdsr ) : null;
                 
