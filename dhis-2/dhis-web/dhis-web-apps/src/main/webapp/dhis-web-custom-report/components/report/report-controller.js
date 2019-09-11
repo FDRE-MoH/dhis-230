@@ -24,6 +24,7 @@ customReport.controller('reportController',
                     categoryOptionGroupSets: [],
                     groupIdsByDataElement: [],
                     groupsByDataElement: [],
+                    optionSets: [],
                     showDiseaseGroup: false,
                     periods: [],
                     selectedPeriods: [],
@@ -79,6 +80,14 @@ customReport.controller('reportController',
                                     selectionTree.clearSelectedOrganisationUnitsAndBuildTree();
 
                                     $scope.model.metaDataLoaded = true;
+                                });
+                                
+                                 
+                                //get the optionSets from indexDBand assign them to $scope.model.optionSets if it is not assigned already
+                                MetaDataFactory.getAll('optionSets').then(function(opts){
+                                    angular.forEach(opts, function(op){
+                                        $scope.model.optionSets[op.id]=op;
+                                    })
                                 });
                             });
                         });
@@ -141,6 +150,7 @@ customReport.controller('reportController',
             }
             else {
                 if( $scope.model.selectedDataSet.sections.length > 0 ){
+                    var takenLabels = {};
                     var dataElements = [], indicators = [];
 
                     angular.forEach($scope.model.selectedDataSet.dataElements, function(de){
@@ -153,16 +163,31 @@ customReport.controller('reportController',
                             var dataElement = $scope.model.dataElements[de.id];
 
                             if( dataElement ){
-                                angular.forEach($scope.dataElementGroups,function(dataElementGroup){
-                                    if(dataElementGroup.dataElements[de.id]){
-                                        if(!dataElementGroup.previouslyTaken ){
-                                            dataElementGroup.previouslyTaken=true;
-                                            dataElement.displayTitle={};
-                                            dataElement.displayTitle.displayName=dataElementGroup.displayName;
-                                            dataElement.displayTitle.serialNumber=dataElementGroup.serial_number;
+                                if(dataElement.labelDEGroup && !takenLabels[dataElement.labelDEGroup]){
+                                    dataElement.displayTitle = {};
+                                    dataElement.displayTitle.serialNumber = dataElement.labelDEGroup;
+                                    takenLabels[dataElement.labelDEGroup]=true;
+                                    var labelOptionSet = {};
+                                    var keys= Object.keys($scope.model.optionSets);
+                                    
+                                    //find the labeling optinoSet
+                                    for(var i=0; i<keys.length; i++){
+                                        if($scope.model.optionSets[keys[i]].label_option_set){
+                                            labelOptionSet = $scope.model.optionSets[keys[i]];
+                                            break;
                                         }
-                                    } 
-                                });
+                                    }
+                                    
+                                    //find the name of the specific option using the code.
+                                    var options= labelOptionSet.options;
+                                    for(var i = 0; i<options.length; i++){
+                                        if(dataElement.labelDEGroup === options[i].code){
+                                            dataElement.displayTitle.displayName = options[i].displayName;
+                                            break;
+                                        }
+                                    }
+                                }
+
                                 dataElements.push( dataElement );
                             }
                         });
