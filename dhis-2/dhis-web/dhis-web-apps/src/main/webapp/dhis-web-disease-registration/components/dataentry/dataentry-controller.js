@@ -482,13 +482,24 @@ diseaseRegistration.controller('dataEntryController',
         };
 
         ModalService.showModal({}, modalOptions).then(function(result){
+            var completeDataSetDeletePromise = {};
             
-            CompletenessService.delete($scope.model.selectedDataSet.id, 
+            //if attributeCategoryCombo is default, there is no need to send cc and cp
+            if($scope.model.selectedAttributeCategoryCombo.isDefault){
+                completeDataSetDeletePromise = CompletenessService.deleteDefault($scope.model.selectedDataSet.id,
+                    $scope.model.selectedPeriod.id,
+                    orgUnit,
+                    multiOrgUnit);
+            }else{
+                completeDataSetDeletePromise = CompletenessService.delete($scope.model.selectedDataSet.id, 
                 $scope.model.selectedPeriod.id, 
                 orgUnit,
                 $scope.model.selectedAttributeCategoryCombo.id,
                 DataEntryUtils.getOptionIds($scope.model.selectedOptions),
-                multiOrgUnit).then(function(response){
+                multiOrgUnit)
+                        
+            }
+            completeDataSetDeletePromise.then(function(response){
                 
                 var dialogOptions = {
                     headerText: 'success',

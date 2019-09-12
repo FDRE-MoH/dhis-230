@@ -624,13 +624,24 @@ planSetting.controller('dataEntryController',
         };
 
         ModalService.showModal({}, modalOptions).then(function(result){
+            var completeDataSetDeletePromise ={};
+            if($scope.model.selectedAttributeCategoryCombo.isDefault){
+                //if it the attributeCategoryCombo is default ther is no need to send cc and cp
+                completeDataSetDeletePromise = CompletenessService.deleteDefault($scope.model.selectedDataSet.id, 
+                    $scope.model.selectedPeriod.id, 
+                    orgUnit,
+                    multiOrgUnit);
+                
+            }else{
+                completeDataSetDeletePromise = CompletenessService.delete($scope.model.selectedDataSet.id, 
+                    $scope.model.selectedPeriod.id, 
+                    orgUnit,multiOrgUnit,
+                    $scope.model.selectedAttributeCategoryCombo.id,
+                    DataEntryUtils.getOptionIds($scope.model.selecteOptions),
+                    multiOrgUnit);
+            }
             
-            CompletenessService.delete($scope.model.selectedDataSet.id, 
-                $scope.model.selectedPeriod.id, 
-                orgUnit,
-                $scope.model.selectedAttributeCategoryCombo.id,
-                DataEntryUtils.getOptionIds($scope.model.selectedOptions),
-                multiOrgUnit).then(function(response){
+            completeDataSetDeletePromise.then(function(response){
                 
                 var dialogOptions = {
                     headerText: 'success',
