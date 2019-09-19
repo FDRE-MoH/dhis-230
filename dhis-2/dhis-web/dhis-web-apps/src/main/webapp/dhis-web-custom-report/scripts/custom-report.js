@@ -31,7 +31,7 @@ if( dhis2.customReport.memoryOnly ) {
 dhis2.customReport.store = new dhis2.storage.Store({
     name: 'dhis2cr',
     adapters: [dhis2.storage.IndexedDBAdapter, dhis2.storage.DomSessionStorageAdapter, dhis2.storage.InMemoryAdapter],
-    objectStores: ['dataSets', 'periodTypes', 'categoryCombos', 'dataElementGroups', 'categoryOptionGroupSets', 'organisationUnitGroupSets']
+    objectStores: ['dataSets', 'periodTypes', 'categoryCombos', 'dataElementGroups', 'categoryOptionGroupSets', 'organisationUnitGroupSets','optionSets']
 });
 
 (function($) {
@@ -172,7 +172,12 @@ function downloadMetaData()
         
         .then( getMetaOrganisationUnitGroupSets )
         .then( filterMissingOrganisationUnitGroupSets )
-        .then( getOrganisationUnitGroupSets );
+        .then( getOrganisationUnitGroupSets )
+
+        //Option Sets are added to contain the labels in the dataSet report.
+        .then( getMetaOptionSets)
+        .then( filterMissingOptionSets)
+        .then( getOptionSets);
 
 }
 
@@ -245,4 +250,16 @@ function filterMissingOrganisationUnitGroupSets( objs ){
 
 function getOrganisationUnitGroupSets( ids ){
     return dhis2.metadata.getBatches( ids, batchSize, 'organisationUnitGroupSets', 'organisationUnitGroupSets', '../api/organisationUnitGroupSets.json', 'paging=false&fields=id,displayName,version,organisationUnitGroups[id,displayName]', 'idb', dhis2.customReport.store, dhis2.metadata.processObject);
+}
+
+function getMetaOptionSets(){
+    return dhis2.metadata.getMetaObjectIds('optionSets', '../api/optionSets.json', 'paging=false&fields=id,version');
+}
+
+function filterMissingOptionSets( objs ){
+    return dhis2.metadata.filterMissingObjIds('optionSets', dhis2.customReport.store, objs);
+}
+
+function getOptionSets( ids ){    
+    return dhis2.metadata.getBatches( ids, batchSize, 'optionSets', 'optionSets', '../api/optionSets.json', 'paging=false&fields=id,displayName,version,valueType,attributeValues[value,attribute[id,name,valueType,code]],options[id,displayName,code]', 'idb', dhis2.customReport.store, dhis2.metadata.processObject);
 }

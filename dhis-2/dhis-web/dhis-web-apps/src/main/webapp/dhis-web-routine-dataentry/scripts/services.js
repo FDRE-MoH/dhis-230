@@ -406,6 +406,17 @@ var routineDataEntryServices = angular.module('routineDataEntryServices', ['ngRe
                 return response.data;
             });
             return promise;
+        },
+        
+        //added to support deleting completness of dataSets which only have default attributeOptionCombos
+        deleteDefault: function( ds, pe, ou, multiOu){
+            var promise = $http.delete('../api/completeDataSetRegistrations?ds='+ ds + '&pe=' + pe + '&ou=' + ou + '&multiOu=' + multiOu ).then(function(response){
+                return response.data;
+            }, function(response){                
+                DataEntryUtils.errorNotifier(response);
+                return response.data;
+            });
+            return promise;
         }
     };
 });
