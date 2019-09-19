@@ -1433,7 +1433,8 @@ var d2Services = angular.module('d2Services', ['ngResource'])
 
         var today = moment(DateUtils.getToday(),'YYYY-MM-DD');
         
-        if ( opts.dataSetType === 'Routine' ){
+        if ( opts.dataSetType === 'Routine' || 
+                opts.dataSetType === 'Disease' ){
             d2Periods = d2Periods.filter( function( p ) {
                 return today.diff(p.endDate, 'days') >= -9;
             });
