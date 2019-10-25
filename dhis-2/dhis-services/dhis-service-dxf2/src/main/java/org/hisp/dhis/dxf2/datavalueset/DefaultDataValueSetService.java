@@ -769,9 +769,24 @@ public class DefaultDataValueSetService
                     //summary.setStatus( ImportStatus.ERROR );
                     continue;
                 }
-
+                
                 Period latestFuturePeriod = dataSet.getDataElements().iterator().next().getLatestOpenFuturePeriod();
-
+                
+                long dateDifference = DateUtils.getDays(latestFuturePeriod.getStartDate(),latestFuturePeriod.getEndDate());
+                
+                //First check if the period type is greater than weekly, i.e monthly, bimonthly, sixmonthly...
+                //if this is the case check if today is after the 21st of the end date. (within  9 days of the enddate)
+                //if today is within 9 days of end date, open up the next period.
+                if(dateDifference > 20) {//this means the period is at least monthly
+                	Date today = new Date();
+                	Period nextFuturePeriod = period.getPeriodType().getNextPeriod(latestFuturePeriod);
+                	dateDifference = DateUtils.getDays(today,nextFuturePeriod.getEndDate());
+                	if(dateDifference >0 && dateDifference < 9) {
+                		//this means that today is within the last 9 days of the next period.
+                		latestFuturePeriod = nextFuturePeriod;
+                	}
+                }
+                
                 if ( period.isAfter( latestFuturePeriod ) )
                 {
                     summary.getConflicts().add( new ImportConflict( period.getIsoDate(), "Period: " +
@@ -929,6 +944,21 @@ public class DefaultDataValueSetService
 
             Period latestFuturePeriod = dataElementLatestFuturePeriodMap.get( dataElement.getUid(), () -> dataElement.getLatestOpenFuturePeriod() );
 
+            long dateDifference = DateUtils.getDays(latestFuturePeriod.getStartDate(),latestFuturePeriod.getEndDate());
+            
+            //First check if the period type is greater than weekly, i.e monthly, bimonthly, sixmonthly...
+            //if this is the case check if today is after the 21st of the end date. (within  9 days of the enddate)
+            //if today is within 9 days of end date, open up the next period.
+            if(dateDifference > 20) {//this means the period is at least monthly
+            	Date today = new Date();
+            	Period nextFuturePeriod = period.getPeriodType().getNextPeriod(latestFuturePeriod);
+            	dateDifference = DateUtils.getDays(today,nextFuturePeriod.getEndDate());
+            	if(dateDifference >0 && dateDifference < 9) {
+            		//this means that today is within the last 9 days of the next period.
+            		latestFuturePeriod = nextFuturePeriod;
+            	}
+            }
+            
             if ( period.isAfter( latestFuturePeriod ) )
             {
                 summary.getConflicts().add( new ImportConflict( period.getIsoDate(), "Period: " +
