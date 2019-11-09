@@ -125,16 +125,16 @@ public class DailyPeriodType
     @Override
     public List<Period> generateRollingPeriods( DateTimeUnit dateTimeUnit, Calendar calendar )
     {
-        Calendar cal = getCalendar();
+        //Calendar cal = getCalendar();
 
-        DateTimeUnit iterationDateTimeUnit = cal.minusDays( this, dateTimeUnit, 364 );
+        DateTimeUnit iterationDateTimeUnit = calendar.minusDays( this, dateTimeUnit, 364 );
 
         List<Period> periods = Lists.newArrayList();
 
         for ( int i = 0; i < 365; i++ )
         {
             periods.add( createPeriod( iterationDateTimeUnit, calendar ) );
-            iterationDateTimeUnit = cal.plusDays( this, iterationDateTimeUnit, 1 );
+            iterationDateTimeUnit = calendar.plusDays( this, iterationDateTimeUnit, 1 );
         }
 
         return periods;
