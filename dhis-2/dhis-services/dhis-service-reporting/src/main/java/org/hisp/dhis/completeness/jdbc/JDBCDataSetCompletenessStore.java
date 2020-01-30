@@ -83,8 +83,6 @@ public class JDBCDataSetCompletenessStore
             "AND cr.periodid IN ( " + getCommaDelimitedString( periods ) + " ) " +
             "AND cr.sourceid IN ( " + getCommaDelimitedString( relevantSources ) + " )";
         
-        System.out.println("getCompleteDataSetRegistrations sql:  " + sql );
-        
         return statementManager.getHolder().queryForInteger( sql );
     }
 
@@ -104,8 +102,6 @@ public class JDBCDataSetCompletenessStore
             "AND cr.periodid IN ( " + getCommaDelimitedString( periods ) + " ) " +
             "AND cr.sourceid IN ( " + getCommaDelimitedString( relevantSources ) + " ) " +
             "AND cr.date <= " + statementBuilder.getAddDate( "pe.enddate", dataSet.getTimelyDays() );
-        
-        System.out.println("getCompleteDataSetRegistrationsWithTimeliness sql:  " + sql );
         
         return statementManager.getHolder().queryForInteger( sql );
     }
