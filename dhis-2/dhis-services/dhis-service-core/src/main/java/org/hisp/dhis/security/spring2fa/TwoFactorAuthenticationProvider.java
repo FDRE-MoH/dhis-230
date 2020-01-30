@@ -34,8 +34,8 @@ import org.hisp.dhis.security.SecurityService;
 import org.hisp.dhis.security.SecurityUtils;
 import org.hisp.dhis.user.UserCredentials;
 import org.hisp.dhis.user.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.LockedException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -50,7 +50,7 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedC
 public class TwoFactorAuthenticationProvider
     extends DaoAuthenticationProvider
 {
-    private static final Logger log = LoggerFactory.getLogger( TwoFactorAuthenticationProvider.class );
+    private static final Log log = LogFactory.getLog( TwoFactorAuthenticationProvider.class );
 
     private UserService userService;
 

@@ -32,8 +32,8 @@ import org.hisp.dhis.external.conf.DhisConfigurationProvider;
 import org.hisp.dhis.security.spring2fa.TwoFactorWebAuthenticationDetails;
 import org.hisp.dhis.user.UserCredentials;
 import org.hisp.dhis.user.UserService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.event.EventListener;
 import org.springframework.security.authentication.event.AuthenticationFailureBadCredentialsEvent;
@@ -49,7 +49,7 @@ import java.util.Objects;
 @Component
 public class AuthenticationListener
 {
-    private static final Logger log = LoggerFactory.getLogger( AuthenticationListener.class );
+	private static final Log log = LogFactory.getLog( AuthenticationListener.class );
 
     @Autowired
     private SecurityService securityService;

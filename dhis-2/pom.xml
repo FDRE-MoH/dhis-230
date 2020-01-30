@@ -649,6 +649,10 @@
             <groupId>dom4j</groupId>
             <artifactId>dom4j</artifactId>
           </exclusion>
+          <exclusion>
+			  <groupId>log4j</groupId>
+			  <artifactId>log4j</artifactId>
+          </exclusion>
         </exclusions>
       </dependency>
       <dependency>
@@ -681,6 +685,10 @@
           <exclusion>
             <groupId>org.apache.struts</groupId>
             <artifactId>struts-taglib</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
           </exclusion>
         </exclusions>
       </dependency>
@@ -801,23 +809,7 @@
         <groupId>commons-io</groupId>
         <artifactId>commons-io</artifactId>
         <version>2.6</version>
-      </dependency>
-      <dependency>
-        <groupId>commons-logging</groupId>
-        <artifactId>commons-logging</artifactId>
-        <version>1.2</version>
-        <scope>compile</scope>
-        <exclusions>
-          <exclusion>
-            <groupId>avalon-framework</groupId>
-            <artifactId>avalon-framework</artifactId>
-          </exclusion>
-          <exclusion>
-            <groupId>logkit</groupId>
-            <artifactId>logkit</artifactId>
-          </exclusion>
-        </exclusions>
-      </dependency>
+      </dependency>      
       <dependency>
         <groupId>org.apache.commons</groupId>
         <artifactId>commons-email</artifactId>
@@ -848,7 +840,7 @@
       <dependency>
         <groupId>org.hibernate</groupId>
         <artifactId>hibernate-spatial</artifactId>
-        <version>${hibernate.version}</version>
+        <version>${hibernate.version}</version>        
       </dependency>
       <dependency>
         <groupId>org.hibernate</groupId>
@@ -871,20 +863,26 @@
         <artifactId>javassist</artifactId>
         <version>${javassist.version}</version>
       </dependency>
+      <!-- logging -->
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-api</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-core</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.logging.log4j</groupId>
+        <artifactId>log4j-slf4j-impl</artifactId>
+        <version>${log4j.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.slf4j</groupId>
         <artifactId>slf4j-api</artifactId>
         <version>${slf4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-log4j12</artifactId>
-        <version>${slf4j.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>1.2.17</version>
       </dependency>
       <dependency>
         <groupId>org.apache.geronimo.specs</groupId>
@@ -894,7 +892,7 @@
       <dependency>
         <groupId>com.mchange</groupId>
         <artifactId>c3p0</artifactId>
-        <version>0.9.5.2</version>
+        <version>0.9.5.5</version>
       </dependency>
       <dependency>
         <groupId>org.postgresql</groupId>
@@ -977,6 +975,12 @@
         <groupId>net.sourceforge.jexcelapi</groupId>
         <artifactId>jxl</artifactId>
         <version>2.6.12</version>
+        <exclusions>
+          <exclusion>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>xpp3</groupId>
@@ -1127,11 +1131,11 @@
         <groupId>com.github.ben-manes.caffeine</groupId>
         <artifactId>caffeine</artifactId>
         <version>2.5.6</version>
-      </dependency>
+      </dependency>      
       <dependency>
         <groupId>com.googlecode.jsmpp</groupId>
         <artifactId>jsmpp</artifactId>
-        <version>2.1.0-RELEASE</version>
+        <version>2.1.0-RELEASE</version>        
       </dependency>
       <dependency>
         <groupId>org.openid4java</groupId>
@@ -1169,7 +1173,7 @@
         <artifactId>spring-restdocs-mockmvc</artifactId>
         <version>1.1.2.RELEASE</version>
         <scope>test</scope>
-      </dependency>      
+      </dependency>
       <dependency>
         <groupId>com.vividsolutions</groupId>
         <artifactId>jts-io</artifactId>
@@ -1215,6 +1219,8 @@
     <powermock.version>1.6.6</powermock.version>
     <jackson.version>2.9.8</jackson.version>
     <slf4j.version>1.7.5</slf4j.version>
+    <log4j.version>2.13.0</log4j.version>
+    <slf4j.version>1.7.25</slf4j.version>
     <geotools.version>18.0</geotools.version>
     <jasperreports.version>6.3.1</jasperreports.version>
     <snippetsDirectory>${project.build.directory}/generated-snippets</snippetsDirectory>
