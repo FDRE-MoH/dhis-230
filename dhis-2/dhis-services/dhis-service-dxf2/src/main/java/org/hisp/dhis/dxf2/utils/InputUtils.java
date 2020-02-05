@@ -31,7 +31,6 @@ package org.hisp.dhis.dxf2.utils;
 import org.hisp.dhis.common.IdScheme;
 import org.hisp.dhis.common.IdentifiableObjectManager;
 import org.hisp.dhis.common.IllegalQueryException;
-import org.hisp.dhis.commons.util.SystemUtils;
 import org.hisp.dhis.commons.util.TextUtils;
 import org.hisp.dhis.user.User;
 import org.hisp.dhis.category.CategoryCombo;
@@ -40,8 +39,8 @@ import org.hisp.dhis.category.CategoryOptionCombo;
 import org.hisp.dhis.category.CategoryService;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import org.hisp.dhis.cache.Cache;
+import org.hisp.dhis.cache.SimpleCacheBuilder;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -51,10 +50,10 @@ import java.util.concurrent.TimeUnit;
  */
 public class InputUtils
 {
-    private static final Cache<String, Integer> ATTR_OPTION_COMBO_ID_CACHE = Caffeine.newBuilder()
+    private static final Cache<Integer> ATTR_OPTION_COMBO_ID_CACHE = new SimpleCacheBuilder<Integer>()
         .expireAfterWrite( 3, TimeUnit.HOURS )
-        .initialCapacity( 1000 )
-        .maximumSize( SystemUtils.isTestRun() ? 0 : 10000 ).build();
+        .withInitialCapacity( 1000 )
+        .withMaximumSize( 10000 ).build();
 
     @Autowired
     private CategoryService categoryService;
@@ -78,7 +77,7 @@ public class InputUtils
     {
         String cacheKey = TextUtils.joinHyphen( cc, cp, String.valueOf( skipFallback ) );
 
-        Integer id = ATTR_OPTION_COMBO_ID_CACHE.getIfPresent( cacheKey );
+        Integer id = ATTR_OPTION_COMBO_ID_CACHE.getIfPresent( cacheKey ).orElse( null );
 
         if ( id != null )
         {

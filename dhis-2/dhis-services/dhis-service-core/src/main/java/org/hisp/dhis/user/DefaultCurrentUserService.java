@@ -28,9 +28,8 @@ package org.hisp.dhis.user;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import org.hisp.dhis.commons.util.SystemUtils;
+import org.hisp.dhis.cache.Cache;
+import org.hisp.dhis.cache.SimpleCacheBuilder;
 import org.hisp.dhis.organisationunit.OrganisationUnit;
 import org.hisp.dhis.security.spring.AbstractSpringSecurityCurrentUserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,10 +58,11 @@ public class DefaultCurrentUserService
      * Cache for user IDs. Key is username. Disabled during test phase.
      * Take care not to cache user info which might change during runtime.
      */
-    private static final Cache<String, Integer> USERNAME_ID_CACHE = Caffeine.newBuilder()
+    private static final Cache<Integer> USERNAME_ID_CACHE = new SimpleCacheBuilder<Integer>()
+        .forRegion( "userApprovalLevelCache" )
         .expireAfterAccess( 1, TimeUnit.HOURS )
-        .initialCapacity( 200 )
-        .maximumSize( SystemUtils.isTestRun() ? 0 : 2000 )
+        .withInitialCapacity( 10000 )
+        .withMaximumSize( 50000 )
         .build();
 
     // -------------------------------------------------------------------------
@@ -108,7 +108,7 @@ public class DefaultCurrentUserService
             return null;
         }
 
-        Integer userId = USERNAME_ID_CACHE.get( userDetails.getUsername(), un -> getUserId( un ) );
+        Integer userId = USERNAME_ID_CACHE.get( userDetails.getUsername(), un -> getUserId( un ) ).orElse( null );
 
         if ( userId == null )
         {

@@ -1,8 +1,5 @@
 package org.hisp.dhis.organisationunit;
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
-
 /*
  * Copyright (c) 2004-2018, University of Oslo
  * All rights reserved.
@@ -33,10 +30,12 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 
 import com.google.common.collect.Sets;
 
+import org.hisp.dhis.cache.Cache;
+import org.hisp.dhis.cache.SimpleCacheBuilder;
+
 import org.apache.commons.lang3.ObjectUtils;
 import org.hisp.dhis.commons.collection.ListUtils;
 import org.hisp.dhis.commons.filter.FilterUtils;
-import org.hisp.dhis.commons.util.SystemUtils;
 import org.hisp.dhis.configuration.ConfigurationService;
 import org.hisp.dhis.dataset.DataSet;
 import org.hisp.dhis.dataset.DataSetService;
@@ -66,10 +65,13 @@ public class DefaultOrganisationUnitService
 {
     private static final String LEVEL_PREFIX = "Level ";
 
-    private static final Cache<String, Boolean> IN_USER_ORG_UNIT_HIERARCHY_CACHE = Caffeine.newBuilder()
+    private static final Cache<Boolean> IN_USER_ORG_UNIT_HIERARCHY_CACHE = new SimpleCacheBuilder<Boolean>()
+        .forRegion( "inUserOuHierarchy" )
         .expireAfterWrite( 3, TimeUnit.HOURS )
-        .initialCapacity( 1000 )
-        .maximumSize( SystemUtils.isTestRun() ? 0 : 20000 ).build();
+        .withInitialCapacity( 1000 )
+        .forceInMemory()
+        .withMaximumSize(20000 )
+        .build();
 
     // -------------------------------------------------------------------------
     // Dependencies
@@ -418,7 +420,7 @@ public class DefaultOrganisationUnitService
     {
         String cacheKey = joinHyphen( currentUserService.getCurrentUsername(), organisationUnit.getUid() );
 
-        return IN_USER_ORG_UNIT_HIERARCHY_CACHE.get( cacheKey, ou -> isInUserHierarchy( organisationUnit ) );
+        return IN_USER_ORG_UNIT_HIERARCHY_CACHE.get( cacheKey, ou -> isInUserHierarchy( organisationUnit ) ).get();
     }
 
     @Override

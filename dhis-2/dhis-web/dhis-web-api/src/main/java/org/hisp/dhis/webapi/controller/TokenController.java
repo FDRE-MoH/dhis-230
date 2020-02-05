@@ -28,8 +28,9 @@ package org.hisp.dhis.webapi.controller;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import org.hisp.dhis.cache.Cache;
+import org.hisp.dhis.cache.SimpleCacheBuilder;
+
 import org.hisp.dhis.dxf2.webmessage.WebMessageException;
 import org.hisp.dhis.dxf2.webmessage.WebMessageUtils;
 import org.hisp.dhis.external.conf.DhisConfigurationProvider;
@@ -64,19 +65,21 @@ public class TokenController
 
     private static final String TOKEN_CACHE_KEY = "keyGoogleAccessToken";
 
-    private static final Cache<String, Optional<GoogleAccessToken>> TOKEN_CACHE = Caffeine.newBuilder().
-        maximumSize( 1 ).expireAfterWrite( 10, TimeUnit.MINUTES ).build();
+    private static final Cache<GoogleAccessToken> TOKEN_CACHE = new SimpleCacheBuilder<GoogleAccessToken>()
+        .forRegion( "googleAccessToken" ).expireAfterAccess( 10, TimeUnit.MINUTES ).withMaximumSize( 1 ).build();
 
     @Autowired
     private DhisConfigurationProvider config;
 
     @RequestMapping( value = "/google", method = RequestMethod.GET, produces = "application/json" )
     public @ResponseBody GoogleAccessToken getEarthEngineToken( HttpServletResponse response )
-        throws WebMessageException, ExecutionException
+        throws WebMessageException,
+        ExecutionException
     {
         setNoStore( response );
 
-        Optional<GoogleAccessToken> tokenOptional = TOKEN_CACHE.get( TOKEN_CACHE_KEY, c -> config.getGoogleAccessToken() );
+        Optional<GoogleAccessToken> tokenOptional = TOKEN_CACHE.get( TOKEN_CACHE_KEY,
+            c -> config.getGoogleAccessToken().get() );
 
         if ( !tokenOptional.isPresent() )
         {

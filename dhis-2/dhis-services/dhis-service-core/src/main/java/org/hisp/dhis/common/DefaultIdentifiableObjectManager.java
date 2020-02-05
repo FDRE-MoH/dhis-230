@@ -28,8 +28,9 @@ package org.hisp.dhis.common;
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-import com.github.benmanes.caffeine.cache.Cache;
-import com.github.benmanes.caffeine.cache.Caffeine;
+import org.hisp.dhis.cache.Cache;
+import org.hisp.dhis.cache.SimpleCacheBuilder;
+
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.apache.commons.lang3.StringUtils;
@@ -89,10 +90,12 @@ public class DefaultIdentifiableObjectManager
     /**
      * Cache for default category objects. Disabled during test phase.
      */
-    private static final Cache<Class<? extends IdentifiableObject>, IdentifiableObject> DEFAULT_OBJECT_CACHE = Caffeine.newBuilder()
+    private static final Cache<IdentifiableObject> DEFAULT_OBJECT_CACHE = new SimpleCacheBuilder<IdentifiableObject>()
+		.forRegion( "defaultObjectCache" )
         .expireAfterAccess( 2, TimeUnit.HOURS )
-        .initialCapacity( 4 )
-        .maximumSize( SystemUtils.isTestRun() ? 0 : 10 )
+        .withInitialCapacity( 4 )
+        .forceInMemory()
+        .withMaximumSize( 10 )
         .build();
 
     @Autowired
@@ -956,10 +959,10 @@ public class DefaultIdentifiableObjectManager
     public Map<Class<? extends IdentifiableObject>, IdentifiableObject> getDefaults()
     {
         return new ImmutableMap.Builder<Class<? extends IdentifiableObject>, IdentifiableObject>()
-            .put( Category.class, DEFAULT_OBJECT_CACHE.get( Category.class, key -> getDefaultObject( Category.class, false ) ) )
-            .put( CategoryCombo.class, DEFAULT_OBJECT_CACHE.get( CategoryCombo.class, key -> getDefaultObject( CategoryCombo.class, false ) ) )
-            .put( CategoryOption.class, DEFAULT_OBJECT_CACHE.get( CategoryOption.class, key -> getDefaultObject( CategoryOption.class, false ) ) )
-            .put( CategoryOptionCombo.class, DEFAULT_OBJECT_CACHE.get( CategoryOptionCombo.class, key -> getDefaultObject( CategoryOptionCombo.class, false ) ) )
+            .put( Category.class, DEFAULT_OBJECT_CACHE.get( Category.class.getName(), key -> getDefaultObject( Category.class, false ) ).orElse( null ) )
+            .put( CategoryCombo.class, DEFAULT_OBJECT_CACHE.get( CategoryCombo.class.getName(), key -> getDefaultObject( CategoryCombo.class, false ) ).orElse( null ) )
+            .put( CategoryOption.class, DEFAULT_OBJECT_CACHE.get( CategoryOption.class.getName(), key -> getDefaultObject( CategoryOption.class, false ) ).orElse( null ) )
+            .put( CategoryOptionCombo.class, DEFAULT_OBJECT_CACHE.get( CategoryOptionCombo.class.getName(), key -> getDefaultObject( CategoryOptionCombo.class, false ) ).orElse( null ) )
             .build();
     }
 
