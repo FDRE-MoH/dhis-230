@@ -105,6 +105,14 @@ public class AnalyticsAggregationType
         {
             return new AnalyticsAggregationType( AggregationType.AVERAGE, AggregationType.LAST );
         }
+        else if ( AggregationType.LAST_IN_PERIOD == aggregationType )
+        {
+            return new AnalyticsAggregationType( AggregationType.SUM, AggregationType.LAST_IN_PERIOD );
+        }
+        else if ( AggregationType.LAST_IN_PERIOD_AVERAGE_ORG_UNIT == aggregationType )
+        {
+            return new AnalyticsAggregationType( AggregationType.AVERAGE, AggregationType.LAST_IN_PERIOD );
+        }
         else
         {
             return new AnalyticsAggregationType( aggregationType, aggregationType );
@@ -124,6 +132,16 @@ public class AnalyticsAggregationType
     public boolean isLastPeriodAggregationType()
     {
         return AggregationType.LAST == periodAggregationType || AggregationType.LAST_AVERAGE_ORG_UNIT == periodAggregationType;
+    }
+    
+    public boolean isLastInPeriodAggregationType()
+    {
+        return AggregationType.LAST_IN_PERIOD == periodAggregationType || AggregationType.LAST_IN_PERIOD_AVERAGE_ORG_UNIT == periodAggregationType;
+    }
+    
+    public boolean isLastOrLastInPeriodAggregationType()
+    {
+        return isLastPeriodAggregationType() || isLastInPeriodAggregationType();
     }
     
     public boolean isNumericDataType()

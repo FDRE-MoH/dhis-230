@@ -321,7 +321,14 @@ public class JdbcAnalyticsManager
 
         if ( params.getAggregationType().isLastPeriodAggregationType() )
         {
-            sql += getLastValueSubquerySql( params );
+        	Date latest = params.getLatestEndDate();
+        	Date earliest = addYears( latest, LAST_VALUE_YEARS_OFFSET );
+            sql += getLastValueSubquerySql( params, earliest );
+        }
+        if ( params.getAggregationType().isLastInPeriodAggregationType() )
+        {
+        	Date earliest = params.getEarliestStartDate();
+            sql += getLastValueSubquerySql( params, earliest );
         }
         else if ( params.hasPreAggregateMeasureCriteria() && params.isDataType( DataType.NUMERIC ) )
         {
@@ -510,10 +517,10 @@ public class JdbcAnalyticsManager
      * attribute option combo. A column {@code pe_rank} defines the rank. Only data
      * for the last 10 years relative to the period end date is included.
      */
-    private String getLastValueSubquerySql( DataQueryParams params )
+    private String getLastValueSubquerySql( DataQueryParams params, Date earliest )
     {
         Date latest = params.getLatestEndDate();
-        Date earliest = addYears( latest, LAST_VALUE_YEARS_OFFSET );
+        //Date earliest = addYears( latest, LAST_VALUE_YEARS_OFFSET );
         List<String> columns = getLastValueSubqueryQuotedColumns( params );
         String fromSourceClause = getFromSourceClause( params ) + " as " + ANALYTICS_TBL_ALIAS;
 

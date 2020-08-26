@@ -38,6 +38,8 @@ public enum AggregationType
     AVERAGE_SUM_ORG_UNIT( "avg_sum_org_unit", true ),
     LAST( "last", true ), // Sum org unit
     LAST_AVERAGE_ORG_UNIT( "last_avg_org_unit", true ),
+    LAST_IN_PERIOD( "last_in_period", true ),
+    LAST_IN_PERIOD_AVERAGE_ORG_UNIT( "last_in_period_avg_org_unit", true ),
     COUNT( "count", true ),
     STDDEV( "stddev", true ),
     VARIANCE( "variance", true ),
